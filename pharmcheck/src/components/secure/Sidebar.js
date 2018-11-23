@@ -12,6 +12,10 @@ class Sidebar extends Component {
     this.state = {};
   }
 
+  componentWillMount() {
+    this.props.ReportStore.list();
+  }
+
   logout = () => {
     this.props.AppStore.removeToken();
   };
