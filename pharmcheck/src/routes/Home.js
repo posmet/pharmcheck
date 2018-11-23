@@ -43,8 +43,8 @@ class Home extends Component {
                       <td>{item.report ? item.report.name : ''}</td>
                       <td>{item.created}</td>
                       <td>
-                        <Button variant="outline-primary" onClick={() => RoutingStore.push(`/reports/${item.report.id}/${item.id}`)}>Перейти</Button>
-                        <Button variant="outline-danger" onClick={() => ReportStore.deleteRequest(item.id)}>Удалить</Button>
+                        <Button variant="outline-primary" size="sm" onClick={() => RoutingStore.push(`/reports/${item.report.id}/${item.id}`)}>Перейти</Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteRequest(item.id)}>Удалить</Button>
                       </td>
                     </tr>
                   )
@@ -79,8 +79,8 @@ class Home extends Component {
                     <td>{item.status.name}</td>
                     <td>{item.format}</td>
                     <td>
-                      <Button variant="outline-primary" disabled={item.status.id === 1}>Скачать</Button>
-                      <Button variant="outline-danger" onClick={() => ReportStore.deleteSavedReport(item.id)}>Удалить</Button>
+                      <Button variant="outline-primary" size="sm" disabled={item.status.id === 1}>Скачать</Button>
+                      <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteSavedReport(item.id)}>Удалить</Button>
                     </td>
                   </tr>
                 )
