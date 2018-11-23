@@ -14,6 +14,14 @@ const getSelectedListStyle = isDraggingOver => ({
   background: isDraggingOver ? 'lightblue' : 'transparent',
 });
 
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
 export class FilterItem extends Component {
 
   constructor(props) {
@@ -121,13 +129,20 @@ export class Filter extends Component {
       return;
     }
 
-    const item = from.find(row => row.id === draggableId);
+    let item = from.find(row => row.id === draggableId);
     if (item) {
       const clone = toJS(item);
       clone.id = uuid();
       clone.condition = "eq";
       to.splice(destination.index, 0, clone);
       onChange(to);
+    } else {
+      item = to.find(row => row.id === draggableId);
+      if (item) {
+        const [removed] = to.splice(result.source.index, 1);
+        to.splice(result.destination.index, 0, removed);
+        onChange(to);
+      }
     }
 
   };

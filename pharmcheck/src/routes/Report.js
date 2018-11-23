@@ -30,6 +30,7 @@ class Report extends Component {
     }
     const { savedId } = match.params;
     if (savedId) {
+      this.setState({showFilter: true});
       ReportStore.getSaved(savedId)
         .then(() => {
           ReportStore.getReportData();
