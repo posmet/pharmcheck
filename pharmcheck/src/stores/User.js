@@ -30,7 +30,13 @@ class UserStore extends AbstractStore {
   login = async (body) => {
     const { post } = this;
     const url = `/api/login`;
-    return await post({url, body, isGlobal: true});
+    try {
+      const res = await post({url, body, isGlobal: true});
+      return Promise.resolve(res);
+    } catch (e) {
+      errorHandler.call(this, {showToast: true}, e);
+      throw e;
+    }
   };
 
 }
