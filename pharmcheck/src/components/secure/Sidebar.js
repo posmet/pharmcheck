@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
 import { Link } from 'react-router-dom';
+import {Collapse} from 'react-bootstrap';
 
 @inject('UserStore', 'AppStore', 'ReportStore', 'RoutingStore')
 @observer
@@ -9,7 +10,9 @@ class Sidebar extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      menuReportIsOpen: /^\/reports\//i.test(this.props.RoutingStore.location.pathname)
+    };
   }
 
   componentWillMount() {
@@ -20,17 +23,13 @@ class Sidebar extends Component {
     this.props.AppStore.removeToken();
   };
 
-  toggleMenu = (e) => {
-    const node = e.target.parentNode;
-    if (node.classList.contains('expand')) {
-      node.classList.remove("expand");
-    } else {
-      node.classList.add("expand");
-    }
+  toggleMenu = (type) => {
+    this.setState({[type]: !this.state[type]});
   };
 
   render() {
-    const { props } = this;
+    const { props, state, toggleMenu } = this;
+    const { menuReportIsOpen } = state;
     const { UserStore, AppStore, ReportStore, RoutingStore } = props;
     const { currentUser } = UserStore;
     const { name } = currentUser;
@@ -53,17 +52,19 @@ class Sidebar extends Component {
             <Link to='/'>Личный кабинет</Link>
           </li>
           <li>
-            <a href="javascript:void(0)" onClick={this.toggleMenu} data-toggle="collapse" className="dropdown-toggle">Отчеты</a>
-            <ul className="collapse list-unstyled">
-              { items.map(request => {
-                const path = `/reports/${request.id}`;
-                return (
-                  <li key={request.id} className={RoutingStore.location.pathname === path ? 'active' : ''}>
-                    <Link to={path}>{request.name}</Link>
-                  </li>
-                )
-              }) }
-            </ul>
+            <a href="javascript:void(0)" onClick={toggleMenu.bind(this, 'menuReportIsOpen')} data-toggle="collapse" className="dropdown-toggle">Отчеты</a>
+            <Collapse in={menuReportIsOpen}>
+              <ul className="list-unstyled">
+                { items.map(request => {
+                  const path = `/reports/${request.id}`;
+                  return (
+                    <li key={request.id} className={RoutingStore.location.pathname === path ? 'active' : ''}>
+                      <Link to={path}>{request.name}</Link>
+                    </li>
+                  )
+                }) }
+              </ul>
+            </Collapse>
           </li>
           <li>
             <a href="javascript:void(0)" onClick={this.logout}>Выйти</a>
