@@ -1,0 +1,44 @@
+{
+  "sources" : [
+    {
+      "-import": "pyodbc",
+      "-connect": "driver={ODBC Driver 17 for SQL Server};server=tf08.5dd.ru;uid=online;pwd=reallyStrongPwd123;database=NET_CENTER;",
+
+      "mac-import": "pyodbc",
+      "mac-connect": "driver={ODBC Driver 17 for SQL Server};server=tf08.5dd.ru;uid=online;pwd=reallyStrongPwd123;database=NET_CENTER;",
+
+      "import": "pyodbc",
+      "connect": "driver={SQL Server};server=tf08.5dd.ru;uid=online;pwd=reallyStrongPwd123;database=NET_CENTER;",
+
+      "rpi-import": "pymssql",
+      "rpi-connect": {
+          "server": "tf08.5dd.ru",
+          "user": "online",
+          "password": "reallyStrongPwd123",
+          "database": "NET_CENTER",
+          "tds_version": "7.1"
+      },
+      "rpi-param_placeholder": "%s",
+
+      "sales_sql_file": "etc/DBAPT449/sales.sql",
+      "remains_sql_file": "etc/DBAPT449/remains.sql",
+
+      "search_products_sql_file": "etc/DBAPT449/search_products.sql",
+      "utc_offset": 180
+    }
+  ],
+
+  "templates": "templates/",
+
+  "config_db" : "etc/config.sqlite",
+  "user_db" : "etc/user.sqlite",
+  "local_db" : "var/local.sqlite",
+  "state_db" : "var/state.sqlite",
+  "utc_offset": 180,
+
+  "send_url": "http://localhost:3000/process",
+  "send_params": { "verify": "localhost.pem" },
+
+  "schedule": [ "23:00" ],
+  "auto_send": true
+}

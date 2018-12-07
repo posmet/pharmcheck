@@ -1,0 +1,68 @@
+$def with (ctx)
+$:ctx.header()
+
+<h2>Фильтр продуктов</h2>
+
+<table id="product_filter" class="display" style="width:100%"></table>
+
+$:ctx.footer()
+
+<script>
+
+var product_filter_data =
+$:ctx.product_filter.body_json()
+;
+
+\$(document).ready(function() {
+    var product_filter = \$('#product_filter');
+    product_filter.DataTable({
+        $if ctx.product_filter.rows_read <= 10: "paging": false,
+        stateSave: true,
+        order: [[ 1, "asc" ]],
+        data: product_filter_data,
+        columns: [
+        $for th in ctx.product_filter.head:
+            { title: "$th" },
+        ],
+        columnDefs: [
+            { targets: 0,
+              type: "text",
+              orderable: true,
+              render: function(data, type, row) {
+                  s = '<input type="checkbox"';
+                  if (data == 1) { s += ' checked="true"'; }
+                  s += '/>'
+                  return s;
+              }
+            }
+        ],
+        language: { "url": "/static/language.json" }
+    });
+
+    product_filter.on('change', 'tr', function(e) {
+
+        console.debug("change ", e, this);
+
+        var t = product_filter.DataTable();
+        var r = t.row(this);
+        var d = r.data();
+        d[0] = e.target.checked ? 1 : 0;
+
+        var p = t.page.info().page;
+
+        r.data(d);
+
+        t.page(p).draw( 'page' );
+
+        if (e.target.checked) {
+            \$.ajax({ method: 'PUT', url: '/config/product_filter/' + d[1] + '/' + d[2] });
+        } else {
+            \$.ajax({ method: 'DELETE', url: '/config/product_filter/' + d[1] });
+        }
+    });
+} );
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+$def with (ctx)
+$:ctx.header()
+
+<form action="/login" method="POST">
+<div class="login-form">
+
+<h2>Парадный вход
+$if ctx.login_failed:
+    <br/>
+    <sup class="err">неверное имя пользователя или пароль</sup>
+</h2>
+
+<div class="login-items">
+<div class="login-item"><label>Имя пользователя: <input type="text" name="username"/></label></div>
+<div class="login-item"><label>Пароль: <input type="password" name="password"/></label></div>
+<div class="login-item"><input type="submit" value="Войти"/></div>
+</div>
+</div>
+
+</form>
+
+$:ctx.footer()
+</body>
+
+</html>

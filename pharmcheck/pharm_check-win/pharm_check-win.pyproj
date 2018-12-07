@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{c0661ea7-f72d-455a-9dea-c1583019ce5f}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile />
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="static\batch_create.png" />
+    <Content Include="static\batch_delete.png" />
+    <Content Include="static\batch_send.png" />
+    <Content Include="static\DataTables\datatables.css" />
+    <Content Include="static\DataTables\datatables.js" />
+    <Content Include="static\DataTables\datatables.min.css" />
+    <Content Include="static\DataTables\datatables.min.js" />
+    <Content Include="static\DataTables\jquery-3.3.1.js" />
+    <Content Include="static\DataTables\jquery.dataTables.min.css" />
+    <Content Include="static\DataTables\jquery.dataTables.min.js" />
+    <Content Include="static\images\sort_asc.png" />
+    <Content Include="static\images\sort_asc_disabled.png" />
+    <Content Include="static\images\sort_both.png" />
+    <Content Include="static\images\sort_desc.png" />
+    <Content Include="static\images\sort_desc_disabled.png" />
+    <Content Include="static\logo_pharmacheck_dark_small_v3.png" />
+    <Content Include="static\logo_rx_v1.png" />
+    <Content Include="static\main.css" />
+    <Content Include="templates\batch.html" />
+    <Content Include="templates\batches.html" />
+    <Content Include="templates\footer.html" />
+    <Content Include="templates\forbidden.html" />
+    <Content Include="templates\header.html" />
+    <Content Include="templates\login.html" />
+    <Content Include="templates\product_filter.html" />
+    <Content Include="templates\table.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="static" />
+    <Folder Include="static\DataTables" />
+    <Folder Include="static\images" />
+    <Folder Include="templates" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

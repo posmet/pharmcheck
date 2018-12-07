@@ -1,16 +1,19 @@
 ﻿'use strict';
 var debug = require('debug');
-var express = require('express');
+const express = require('express');
+const app = module.exports = express();
+
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
-
-var app = express();
+const nconf = require("nconf");
+const http = require("http");
+const messageManager = require('./services/Message');
+require('./config');
+require('./boot')(app);
+require('./routes/')(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

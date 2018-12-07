@@ -1,0 +1,129 @@
+$def with (ctx)
+$:ctx.header()
+
+<h2>
+$if ctx.batch_id_prev: <a href="/batch/$ctx.batch_id_prev/view">←</a>
+Выгрузка #$ctx.batch_id
+$if ctx.batch_id_next: <a href="/batch/$ctx.batch_id_next/view">→</a>
+<div class="nav-bar">
+$if ctx.session.role >= ctx.ROLE_BATCH_APPROVER:
+    <div class="nav-item send">
+    <a id="batch_send" href="javascript:batch_send()">
+    $if ctx.sent == 0:
+        Отправить
+    $else:
+        Отправить ещё раз
+    </a><br/><sup id="batch_send_status"></sup>
+    </div>
+$if ctx.session.role >= ctx.ROLE_BATCH_REMOVER:
+    <div class="nav-item delete">
+    <a id="batch_delete" href="javascript:batch_delete()">Удалить</a>
+    </div>
+</div>
+<br/>
+<sup>от $ctx.batch_date</sup>
+</h2>
+
+<h3>Продажи<br/>
+<sup>с $ctx.start_date по $ctx.end_date</sup></h3>
+
+<table id="sales" class="display" style="width:100%"></table>
+
+<h3>Остатки<br/>
+<sup>на $ctx.start_date</sup></h3>
+
+<table id="remains" class="display" style="width:100%"></table>
+
+<h3>Протокол</h3>
+
+<pre id="log">
+$for l in ctx.log:
+    $l[0]: $l[1]
+</pre>
+
+$:ctx.footer()
+
+<script>
+
+var batch_approved = $ctx.approved;
+var batch_sent = $ctx.sent;
+var batch_send_in_progress = 0;
+
+function batch_send() {
+    if (batch_send_in_progress) {
+        return;
+    }
+
+    batch_send_in_progress = 1;
+    \$("#batch_send_status").text("отправка...");
+
+    \$.ajax({ method: 'PUT', url: '/batch/$ctx.batch_id/send',
+        complete: function(r,st) {
+            j = r.responseJSON;
+
+            if (j['sent']) {
+                \$("#batch_send").text("Отправить ещё раз");
+            }
+
+            l = "";
+            for (i in j.log) {
+                l += j.log[i][0] + ": " + j.log[i][1] + "\n";
+            }
+
+            \$("#batch_send_status").text(j.success ? "отправлено" : "ошибка");
+
+            \$("#log").text(l);
+
+            batch_send_in_progress = 0;
+        } });
+
+}
+
+function batch_delete() {
+    \$.ajax({ method: 'DELETE', url: '/batch/$ctx.batch_id' });
+
+$if ctx.batch_id_next:
+    document.location = "/batch/$ctx.batch_id_next/view";
+$else:
+    $if ctx.batch_id_prev:
+        document.location = "/batch/$ctx.batch_id_prev/view";
+    $else:
+        document.location = "/";
+}
+
+var sales_data = 
+$:ctx.sales.body_json()
+;
+
+var remains_data = 
+$:ctx.remains.body_json()
+;
+
+\$(document).ready(function() {
+    \$('#sales').DataTable({
+        $if ctx.sales.rows_read <= 10: "paging": false,
+        "order": [[ 0, "desc" ]],
+        "language": { "url": "/static/language.json" },
+        data: sales_data,
+        columns: [
+        $for th in ctx.sales.head:
+            { title: "$th" },
+        ]
+    });
+
+    \$('#remains').DataTable({
+        $if ctx.remains.rows_read <= 10: "paging": false,
+        "order": [[ 0, "desc" ]],
+        "language": { "url": "/static/language.json" },
+        data: remains_data,
+        columns: [
+        $for th in ctx.remains.head:
+            { title: "$th" },
+        ]
+    });
+} );
+
+    </script>
+</body>
+
+</html>

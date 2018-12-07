@@ -1,0 +1,18 @@
+$def with (ctx, id, t)
+<table id="$id" class="display" style="width:100%">
+<thead><tr>
+$for th in t.head: <th>$th</th>
+</tr></thead>
+<tbody>
+$for tr in t.body:
+  <tr>
+  $for td in tr: <td>$td</td>
+  $ t.inc_rows_read()
+  </tr>
+</tbody>
+$if t.rows_read > 10:
+  <tfoot><tr>
+  $for th in t.head: <th>$th</th>
+  </tr></tfoot>
+</table>
+

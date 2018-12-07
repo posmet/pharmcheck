@@ -1,0 +1,81 @@
+$def with (ctx)
+$:ctx.header()
+
+$if ctx.session.role >= ctx.ROLE_BATCH_MAKER:
+    <form action="/batch/0/view" method="POST"></form>
+
+<h2>Выгрузки
+<div class="nav-bar">
+$if ctx.session.role >= ctx.ROLE_BATCH_MAKER:
+    <div class="nav-item create"><a href="javascript:batch_new()">Создать</a></div>
+</div>
+</h2>
+
+<a href="javascript:batch_open()">
+$:ctx.table('batches', ctx.batches)
+</a>
+
+$:ctx.footer()
+
+<script>
+
+var last_batch_id = undefined;
+
+function batch_open() {
+    if (last_batch_id == undefined) return;
+
+    window.location.href = '/batch/' + last_batch_id + '/view';
+
+    last_batch_id = undefined;
+}
+
+$if ctx.session.role >= ctx.ROLE_BATCH_MAKER:
+    function batch_new() {
+        document.forms[0].submit();
+
+        return true;
+    }
+
+\$(document).ready(function() {
+    batches = \$('#batches');
+
+    batches.DataTable({
+        order: [[ 0, "desc" ]],
+        searching: false,
+        $if ctx.batches.rows_read <= 10:
+            paging: false,
+            info: false,
+        columnDefs: [
+            { targets: [4, 5],
+              type: "text",
+              orderable: true,
+              render: function(data, type, row) {
+                  s = '<input type="checkbox" disabled';
+                  if (data == 1) { s += ' checked="true"'; }
+                  s += '/>'
+                  return s;
+              }
+            }
+        ],
+        language: { "url": "/static/language.json" }
+    });
+
+    batches.on('click', 'tr', function(e) {
+
+        last_batch_id = undefined;
+
+        var t = batches.DataTable();
+        var r = t.row(this);
+        if (!r) return;
+
+        var d = r.data();
+        if (!d) return;
+
+        last_batch_id = d[0];
+    });
+} );
+
+    </script>
+</body>
+
+</html>

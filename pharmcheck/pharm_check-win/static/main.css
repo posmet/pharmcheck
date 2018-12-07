@@ -1,0 +1,246 @@
+html, body { height: 100%; }
+
+body {
+    font: 90%/1.45em "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif !important;
+    margin: 0;
+    padding: 0;
+
+    position: relative;
+    padding-bottom: 140px !important;
+    height: auto !important;
+    min-height: 100%;
+    box-sizing: border-box;
+    -webkit-font-smoothing: inherit;
+}
+
+div.fw-background {
+    position: absolute;
+    top: -677px;
+    left: 0;
+    width: 100%;
+    height: 800px;
+    background: #3d464c;
+    background: linear-gradient(to right, #3d464c, #3d724c);
+    transform: skew(0, -1.5deg);
+    transform-origin: bottom left;
+    box-shadow: inset 0 -3px 10px rgba(0,0,0,0.1);
+}
+
+div.fw-container {
+    position: relative;
+    max-width: 1140px;
+    margin: 0 auto;
+    clear: both;
+    padding: 0 1em;
+    box-sizing: border-box;
+}
+
+div.fw-container div.fw-header {
+    position: relative;
+    height: 140px;
+    max-width: 1140px;
+    width: 100%;
+    overflow: hidden;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+div.fw-header div.logo {
+    background-image: url(/static/logo_pharmacheck_dark_small_v3.png);
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 50px;
+    line-height: 74px;
+    height: 100px;
+}
+
+div.fw-container div.fw-header div.nav-search {
+    position: absolute;
+    top: 18px;
+    right: 0;
+    color: white;
+    font-weight: 100;
+}
+
+div.fw-container div.fw-header div.nav-item {
+    margin: 1em;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 22px;
+    color: white;
+}
+
+div.fw-container div.fw-header div.nav-item a {
+    font-weight: 100;
+    letter-spacing: 1px;
+}
+
+div.login-form {
+    max-width: 330px;
+    margin: 0 auto;
+}
+
+div.login-form div.login-items div.login-item {
+/*    font-weight: 100; */
+    font-size: 110%;
+/*    letter-spacing: 1px; */
+    clear: both;
+}
+
+div.login-form div.login-items div.login-item input {
+    float: right;
+}
+
+div.fw-container div.fw-header a {
+    color: white;
+}
+
+h2 div.nav-bar {
+    font-size: 80%;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    font-weight: 100;
+}
+
+h2 div.nav-bar div.nav-item {
+    margin: 1em;
+    display: inline-block;
+    padding-left: 24px;
+    background-repeat: no-repeat;
+    background-position: center left;
+}
+
+h2 div.nav-bar div.create {
+    background-image: url(/static/batch_create.png);
+}
+
+h2 div.nav-bar div.delete {
+    background-image: url(/static/batch_delete.png);
+}
+
+h2 div.nav-bar div.send {
+    background-image: url(/static/batch_send.png);
+}
+
+h2 div.nav-bar div.nav-item a {
+    font-weight: 100;
+    letter-spacing: 1px;
+}
+
+h2 div.nav-bar div.nav-item a[disabled="disabled"] {
+    color: black;
+    cursor: default;
+}
+
+#batch_send_status {
+    position: absolute;
+}
+
+div.fw-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    clear: both;
+    color: #ccc;
+    text-align: right;
+    padding: 2em 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+div.fw-footer div.skew {
+    background: #3d724c;
+    background: linear-gradient(to left, #3d464c, #3d724c);
+    height: 70px;
+    transform: skew(0, -1.5deg);
+    transform-origin: top right;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    box-shadow: inset 0 3px 10px rgba(0,0,0,0.1);
+    margin: 0;
+    padding: 0;
+}
+
+div.fw-footer div.skew-bg {
+    background: #3d724c;
+    background: linear-gradient(to left, #3d464c, #3d724c);
+
+    position: absolute;
+    top: 70px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+div.fw-footer h4 {
+    float: right;
+    background-repeat: no-repeat;
+    background-position: center left;
+    background-image: url(/static/logo_rx_v1.png);
+    padding-left: 89px;
+    line-height: 79px;
+
+    font-size: 1.4em;
+    font-weight: normal;
+    margin: 0;
+}
+*/
+
+div.fw-footer p {
+    clear: both;
+}
+
+div.fw-footer a {
+    color: #ccc;
+    text-decoration: underline;
+}
+
+div.fw-footer div.copyright {
+    position: relative;
+    text-align: right;
+/*    padding: 1em 0; */
+    padding: 0;
+    max-width: 1140px;
+    margin: 0 auto;
+    line-height: 1.8em;
+    z-index: 1;
+}
+
+h2 sup, h3 sup {
+    font-weight: 100
+}
+
+h2 sup.err {
+    font-size: 80%;
+    color: red;
+}
+
+p:last-child {
+    margin-bottom: 0;
+}
+
+p {
+    margin: 1em 0;
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+#batches {
+    color: black;
+}
