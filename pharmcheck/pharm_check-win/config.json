@@ -36,8 +36,8 @@
   "state_db" : "var/state.sqlite",
   "utc_offset": 180,
 
-  "send_url": "http://localhost:3000/process",
-  "send_params": { "verify": "localhost.pem" },
+  "send_url": "http://localhost:3000/api/send/",
+  "send_params": { "verify": false },
 
   "schedule": [ "23:00" ],
   "auto_send": true

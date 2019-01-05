@@ -27,6 +27,7 @@ const all = {
     expire: 60 * 60 * 24 * 30 //expiresIn in seconds, 30 days
   }
 };
+console.log('Begining');
 
 const merged = _.merge(
   all,

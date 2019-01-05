@@ -1,10 +1,10 @@
-﻿'use strict';
-var express = require('express');
-var router = express.Router();
+﻿const path = require('path');
+const dist = path.join(__dirname + "/..", 'dist');
 
-/* GET home page. */
-router.get('/', function (req, res) {
-    res.render('index', { title: 'Express' });
-});
-
-module.exports = router;
+module.exports = function (app) {
+	//require("./auth")(app);
+	require("./api")(app);
+	app.get('/login', function (req, res, next) {
+		res.sendFile(path.join(dist, 'index.html'));
+	});
+};

@@ -3,24 +3,24 @@ import { uid, Faker } from 'react-mock';
 export const reports = [
   {
     id: 1,
-    name: 'Тип 1',
-    description: 'Поиск по Тип 1',
+    name: 'Продажи',
+    description: 'Поиск по Продажи',
     fields: [
-      {id: 1, name: 'Номер заказа', key: 'number'},
+      {id: 1, name: 'Номер чека', key: 'number'},
       {id: 2, name: 'Дата', type: 'date', key: 'date'},
       {id: 3, name: 'Количество', type: 'number', key: 'count'},
-      {id: 4, name: 'Оплачен', type: 'boolean', key: 'payed'}
+      {id: 4, name: 'Сумма', type: 'number', key: 'payed'}
     ]
   },
   {
     id: 2,
-    name: 'Тип 2',
-    description: 'Поиск по Тип 2',
+    name: 'Остатки',
+    description: 'Поиск по Склад',
     fields: [
-      {id: 1, name: 'Акция', key: 'promotion'},
-      {id: 2, name: 'Дата завершения', type: 'date', key: 'date'},
-      {id: 3, name: 'Кол-во на складе', type: 'number', key: 'count'},
-      {id: 4, name: 'Оплачен', type: 'boolean', key: 'payed'}
+      {id: 1, name: 'Склад', key: 'promotion'},
+      {id: 2, name: 'Дата', type: 'date', key: 'date'},
+      {id: 3, name: 'Кол-во', type: 'number', key: 'count'},
+      {id: 4, name: 'Сумма', type: 'boolean', key: 'payed'}
     ]
   }
 ];
