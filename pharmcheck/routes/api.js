@@ -13,7 +13,7 @@ const addwhere = function (conds) {
     sqlString = sqlString + ' where ';
     sqlString = sqlString + conds.reduce(function (prev, curr) {
       var Whr = prev;
-      if (prev != '')
+      if (prev !== '')
         Whr = Whr + ' and ';
       Whr = Whr + curr.field;
       switch (curr.cond) {
@@ -68,14 +68,25 @@ module.exports = function (app) {
 			name: 'test'
 		});
   });
-
-  app.post('/api/resultmtrxn/', authService.isAuthenticated(), middleware.asyncMiddleware(async (req, res) => {
-    const request = new sql.Request(pool);
-    const sqlString = 'SELECT * from matrix_cez_n'+addwhere(req.body.conds);
+	app.get('/api/reports/', (req, res) => {
+		res.json({
+			Group_Name: 'Сеть',
+			Ph_Name: 'Аптека',
+			Qty: 555
+		}
+		)
+	});
+  app.post('/api/reports/:id',  function (req, res) {
+      const request = new sql.Request(pool);
+      if (req.params.id === 1) {
+          const sqlString = 'SELECT * from sales_view' + addwhere(req.body.filters);
+      } else {
+          const sqlString = 'SELECT * from remains_view' + addwhere(req.body.filters);
+      }
     console.log(sqlString);
-    const rs = await request.query(sqlString);
+    const rs = request.query(sqlString);
     res.json(rs.recordset);
-  }));
+  });
 	app.post('/api/send/', upload.single('batch.json'), function (req, res,next) {
 		const request = new sql.Request(pool);
 		var sqlString = "";

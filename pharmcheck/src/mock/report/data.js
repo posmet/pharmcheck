@@ -4,23 +4,31 @@ export const reports = [
   {
     id: 1,
     name: 'Продажи',
-    description: 'Поиск по Продажи',
+    description: 'Поиск по Продажам',
     fields: [
-      {id: 1, name: 'Номер чека', key: 'number'},
-      {id: 2, name: 'Дата', type: 'date', key: 'date'},
-      {id: 3, name: 'Количество', type: 'number', key: 'count'},
-      {id: 4, name: 'Сумма', type: 'number', key: 'payed'}
+		{ id: 1, name: 'Сеть', key: 'Group_Name' },
+		{ id: 2, name: 'Аптека', key: 'Ph_Name' },
+		{ id: 3, name: 'Дата', type: 'date', key: 'dat' },
+		{ id: 4, name: 'Наименование', key: 'G_name' },
+		{ id: 5, name: 'ШК', key: 'Barcode' },
+		{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
+		{ id: 4, name: 'Цена', type: 'number', key: 'Price' },
+        { id: 4, name: 'Сумма', type: 'number', key: 'Sm'},
+		{ id: 5, name: 'ШК', key: 'Barcode' },
+		{ id: 6, name: 'Позиций', type: 'number', key: 'QtyPos' }
     ]
   },
   {
     id: 2,
     name: 'Остатки',
-    description: 'Поиск по Склад',
+    description: 'Поиск по Остаткам',
     fields: [
-      {id: 1, name: 'Склад', key: 'promotion'},
-      {id: 2, name: 'Дата', type: 'date', key: 'date'},
-      {id: 3, name: 'Кол-во', type: 'number', key: 'count'},
-      {id: 4, name: 'Сумма', type: 'boolean', key: 'payed'}
+        { id: 1, name: 'Сеть', key: 'Group_Name'},
+        { id: 2, name: 'Аптека', key: 'Ph_Name' },
+        { id: 3, name: 'Дата', type: 'date', key: 'Dat' },
+        { id: 4, name: 'Наименование', key: 'G_name' },
+        { id: 5, name: 'Количество', type: 'number', key: 'Qty' },
+        { id: 6, name: 'ШК', key: 'Barcode'}
     ]
   }
 ];
