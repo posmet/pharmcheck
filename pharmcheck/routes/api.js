@@ -8,45 +8,48 @@ const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
 
 const addwhere = function (conds) {
-  let sqlString = '';
-  if (conds.length > 0) {
-    sqlString = sqlString + ' where ';
-    sqlString = sqlString + conds.reduce(function (prev, curr) {
-      var Whr = prev;
-      if (prev !== '')
-        Whr = Whr + ' and ';
-      Whr = Whr + curr.field;
-      switch (curr.cond) {
-        case 'eq':
-          Whr = Whr + " = '" + curr.value + "'";
-          break;
-        case 'neq':
-          Whr = Whr + " <> '" + curr.value + "'";
-          break;
-        case 'cn':
-          Whr = Whr + " Like '%" + curr.value + "%'";
-          break;
-        case 'ncn':
-          Whr = Whr + " = '" + curr.value + "'";
-          break;
-        case 'nl':
-          Whr = Whr + " = ''";
-          break;
-        case 'nnl':
-          Whr = Whr + " <> ''";
-          break;
-        case 'gt':
-          Whr = Whr + " > '" + curr.value + "'";
-          break;
-        case 'lt':
-          Whr = Whr + " < '" + curr.value + "'";
-          break;
-      }
-      return Whr;
+	let sqlString = '';
+	if (conds) {
+		if (conds.length > 0) {
+			sqlString = sqlString + ' where ';
+			sqlString = sqlString + conds.reduce(function (prev, curr) {
+				var Whr = prev;
+				if (prev !== '')
+					Whr = Whr + ' and ';
+				Whr = Whr + curr.field;
+				switch (curr.cond) {
+					case 'eq':
+						Whr = Whr + " = '" + curr.value + "'";
+						break;
+					case 'neq':
+						Whr = Whr + " <> '" + curr.value + "'";
+						break;
+					case 'cn':
+						Whr = Whr + " Like '%" + curr.value + "%'";
+						break;
+					case 'ncn':
+						Whr = Whr + " = '" + curr.value + "'";
+						break;
+					case 'nl':
+						Whr = Whr + " = ''";
+						break;
+					case 'nnl':
+						Whr = Whr + " <> ''";
+						break;
+					case 'gt':
+						Whr = Whr + " > '" + curr.value + "'";
+						break;
+					case 'lt':
+						Whr = Whr + " < '" + curr.value + "'";
+						break;
+				}
+				return Whr;
 
-    }, "");
-    return sqlString;
-  }
+			}, "");
+		}
+	}
+	return sqlString;
+  
 
 };
 
@@ -69,24 +72,67 @@ module.exports = function (app) {
 		});
   });
 	app.get('/api/reports/', (req, res) => {
-		res.json({
-			Group_Name: 'Сеть',
-			Ph_Name: 'Аптека',
-			Qty: 555
-		}
-		)
+		const reports = [
+			{
+				id: 1,
+				name: 'Продажи',
+				description: 'Поиск по Продажам',
+				fields: [
+					{ id: 1, name: 'Сеть', key: 'Group_Name' },
+					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
+					{ id: 3, name: 'Дата', type: 'date', key: 'dat' },
+					{ id: 4, name: 'Наименование', key: 'G_name' },
+					{ id: 5, name: 'ШК', key: 'Barcode' },
+					{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
+					{ id: 4, name: 'Цена', type: 'number', key: 'Price' },
+					{ id: 4, name: 'Сумма', type: 'number', key: 'Sm' },
+					{ id: 5, name: 'ШК', key: 'Barcode' },
+					{ id: 6, name: 'Позиций', type: 'number', key: 'QtyPos' }
+				]
+			},
+			{
+				id: 2,
+				name: 'Остатки',
+				description: 'Поиск по Остаткам',
+				fields: [
+					{ id: 1, name: 'Сеть', key: 'Group_Name' },
+					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
+					{ id: 3, name: 'Дата', type: 'date', key: 'Dat' },
+					{ id: 4, name: 'Наименование', key: 'G_name' },
+					{ id: 5, name: 'Количество', type: 'number', key: 'Qty' },
+					{ id: 6, name: 'ШК', key: 'Barcode' }
+				]
+			}
+		];
+		res.json(reports);
 	});
-  app.post('/api/reports/:id',  function (req, res) {
-      const request = new sql.Request(pool);
-      if (req.params.id === 1) {
-          const sqlString = 'SELECT * from sales_view' + addwhere(req.body.filters);
+    app.post('/api/reports/:repid',  async (req, res) => {
+	  const request = new sql.Request(pool);
+	  var sqlString = "";
+	  console.log(req.params.repid);
+      if (req.params.repid == '1') {
+          sqlString = 'SELECT * from sales_view' + addwhere(req.body.filters);
       } else {
-          const sqlString = 'SELECT * from remains_view' + addwhere(req.body.filters);
+          sqlString = 'SELECT * from remains_view' + addwhere(req.body.filters);
       }
     console.log(sqlString);
-    const rs = request.query(sqlString);
+    const rs = await request.query(sqlString);
     res.json(rs.recordset);
   });
+	app.post('/api/requests/:reqid', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter) values(1," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "')";
+		console.log(sqlString);
+		await request.query(sqlString);
+		res.status(200).json("ok");
+	});
+	app.post('/api/savedReports/:reqid', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format) values(1," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "')";
+		console.log(sqlString);
+		await request.query(sqlString);
+		res.status(200).json("ok");
+	});
 	app.post('/api/send/', upload.single('batch.json'), function (req, res,next) {
 		const request = new sql.Request(pool);
 		var sqlString = "";
