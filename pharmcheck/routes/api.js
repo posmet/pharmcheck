@@ -126,13 +126,43 @@ module.exports = function (app) {
 		await request.query(sqlString);
 		res.status(200).json("ok");
 	});
-	app.post('/api/savedReports/:reqid', async (req, res) => {
+	app.get('/api/requests/', async (req, res) => {
 		const request = new sql.Request(pool);
-		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format) values(1," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "')";
+		const sqlString = "select * from requests where tp=1";
+		console.log(sqlString);
+		const rs = await request.query(sqlString);
+		res.status(200).json(rs);
+	});
+	app.delete('/api/requests/:reqid', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "delete from requests where id = " + req.params.reqid; 
 		console.log(sqlString);
 		await request.query(sqlString);
 		res.status(200).json("ok");
 	});
+
+	app.post('/api/savedReports/:reqid', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format) values(2," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "')";
+		console.log(sqlString);
+		await request.query(sqlString);
+		res.status(200).json("ok");
+	});
+	app.get('/api/savedReports/', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "select * from requests where tp=2";
+		console.log(sqlString);
+		const rs = await request.query(sqlString);
+		res.status(200).json(rs);
+	});
+	app.delete('/api/savedReports/:reqid', async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "delete from requests where id = " + req.params.reqid;
+		console.log(sqlString);
+		await request.query(sqlString);
+		res.status(200).json("ok");
+	});
+
 	app.post('/api/send/', upload.single('batch.json'), function (req, res,next) {
 		const request = new sql.Request(pool);
 		var sqlString = "";
