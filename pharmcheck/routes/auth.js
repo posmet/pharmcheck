@@ -33,10 +33,14 @@ module.exports = function (app) {
     res.redirect('/');
   });
 
-  app.post('/api/auth', function(req, res, next) {
-    passport.authenticate('local', function (err, user, info) {
+	app.post('/api/login', function (req, res, next) {
+		console.log('logining');
+     passport.authenticate('local', function (err, user, info) {
+		console.log('logining1');
       if (err) return messageService.sendMessage(res, err);
+		console.log('logining2');
       if (!user) return messageService.sendMessage(res, "Неверный логин или пароль");
+		console.log('logining3');
 
       res.json({
         token: authService.signToken(user)

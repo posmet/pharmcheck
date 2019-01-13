@@ -11,10 +11,10 @@ passport.use('local', new AuthLocalStrategy(
       //const request = new sql.Request(pool);
       //console.log(sqlString);
       //request.query(sqlString, function (err, rs) {
-        if (err) {
-          console.log(err);
-          return done(err);
-        }
+      //  if (err) {
+      //    console.log(err);
+      //    return done(err);
+      //  }
         if ((username === 'admin') && (password='afhvfcjan')) {
           return done(null, {
             username: username,
@@ -22,7 +22,7 @@ passport.use('local', new AuthLocalStrategy(
           });
         }
         return done(null, null, 'Неверный логин или пароль');
-      });
+      
     }
 ));
 
