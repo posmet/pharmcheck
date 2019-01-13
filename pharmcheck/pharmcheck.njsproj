@@ -37,6 +37,7 @@
     <Compile Include="config\development.js" />
     <Compile Include="config\index.js" />
     <Compile Include="config\production.js" />
+    <Compile Include="routes\auth.js" />
     <Compile Include="routes\index.js" />
     <Compile Include="routes\api.js">
       <SubType>Code</SubType>
