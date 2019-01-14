@@ -117,7 +117,7 @@ module.exports = function (app) {
 
 	app.post('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
-		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter) values(1," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "')";
+		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,created,status) values(1," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "',getdate(),'Сохранен')";
 		console.log(sqlString);
 		await request.query(sqlString);
 		res.json(messageManager.buildSuccess());
@@ -141,7 +141,7 @@ module.exports = function (app) {
 
 	app.post('/api/savedReports/:reqid', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
-		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format) values(2," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "')";
+		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format,created,status) values(2," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "',getdate(),'Сохранен')";
 		console.log(sqlString);
 		await request.query(sqlString);
 		res.json(messageManager.buildSuccess());
