@@ -32,7 +32,7 @@ class Sidebar extends Component {
     const { menuReportIsOpen } = state;
     const { UserStore, AppStore, ReportStore, RoutingStore } = props;
     const { currentUser } = UserStore;
-    const { name } = currentUser;
+    const { username } = currentUser;
     const { sidebar } = AppStore;
     const { items, loading } = ReportStore;
 
@@ -44,7 +44,7 @@ class Sidebar extends Component {
     return (
       <nav className={classes}>
         <div className="sidebar-header">
-          <h3>{name}</h3>
+          <h3>{username}</h3>
         </div>
 
         <ul className="list-unstyled components">
@@ -70,6 +70,7 @@ class Sidebar extends Component {
             <a href="javascript:void(0)" onClick={this.logout}>Выйти</a>
           </li>
         </ul>
+        <div className="logo" />
       </nav>
     );
   }

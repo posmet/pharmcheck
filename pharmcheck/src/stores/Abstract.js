@@ -17,7 +17,7 @@ class AbstractStore {
     return {
       method: method,
       headers: {
-        authorization: token,
+        authorization: `Bearer ${token}`,
         'Content-type': 'application/json'
       },
     };

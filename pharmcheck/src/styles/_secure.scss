@@ -11,6 +11,17 @@
     -moz-transition: all 0.4s;
     -o-transition: all 0.4s;
     transition: all 0.4s;
+    position: relative;
+    .logo {
+      background-image: url($logo-url);
+      background-repeat: no-repeat;
+      background-size: contain;
+      height: 40px;
+      width: 100%;
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+    }
     &.sidebar--sm {
       min-width: 70px;
       max-width: 70px;

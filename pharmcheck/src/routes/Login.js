@@ -31,15 +31,15 @@ class Login extends Component {
     const { UserStore, RoutingStore, AppStore } = props;
     const { login, password, remember } = values;
     const body = {
-      login,
+      username: login,
       password
     };
     UserStore.login(body)
       .then(({body}) => {
         const { token } = body;
+        AppStore.setToken(token, remember);
         return UserStore.profile()
           .then(() => {
-            AppStore.setToken(token, remember);
             RoutingStore.push('/');
           });
       })
@@ -82,7 +82,7 @@ class Login extends Component {
           };
           return (
             <form noValidate className="login-container" onSubmit={handleSubmit}>
-              <div className="login-container__header">Pharmacheck</div>
+              <div className="login-container__header" />
 
               <FormGroup>
                 <InputGroup {...loginAttrs} />

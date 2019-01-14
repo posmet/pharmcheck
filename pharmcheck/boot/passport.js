@@ -11,18 +11,18 @@ passport.use('local', new AuthLocalStrategy(
       //const request = new sql.Request(pool);
       //console.log(sqlString);
       //request.query(sqlString, function (err, rs) {
-      //  if (err) {
-      //    console.log(err);
-      //    return done(err);
-      //  }
-        if ((username === 'admin') && (password='afhvfcjan')) {
+      //   if (err) {
+      //     console.log(err);
+      //     return done(err);
+      //   }
+        if (username === 'admin' && password === 'afhvfcjan') {
           return done(null, {
+            userid: 1,
             username: username,
             profileUrl: "url_to_profile",
           });
         }
         return done(null, null, 'Неверный логин или пароль');
-      
     }
 ));
 

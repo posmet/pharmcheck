@@ -10,7 +10,7 @@ class Footer extends Component {
   render() {
     return (
       <div className="page__content--footer">
-        Pharmasoft footer
+        © 2018-2019 Все права защищены, ООО "ФАРМАСОФТ"
       </div>
     );
   }
