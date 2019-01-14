@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { SettingsModal, RequestModal, SaveModal } from "@components/report/Modals";
 import { Filter } from "@components/report/Filter";
+import {formatDate} from '@utils/Formatter';
 import uuid from 'uuid/v4';
 
 @inject('AppStore', 'ReportStore', 'RoutingStore')
@@ -33,7 +34,7 @@ class Report extends Component {
       this.setState({showFilter: true});
       ReportStore.getSaved(savedId)
         .then(() => {
-          // ReportStore.getReportData();
+          ReportStore.getReportData();
         })
     } else {
       // ReportStore.getReportData();

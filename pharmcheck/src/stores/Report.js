@@ -103,6 +103,9 @@ class ReportStore extends AbstractStore {
       this.saved = body;
     } catch(e) {
       errorHandler.call(this, {showToast: true}, e);
+      if (!e.abort) {
+        throw e;
+      }
     }
   };
 

@@ -1,21 +1,26 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import {Card, Collapse, Button, Table, ButtonToolbar} from 'react-bootstrap';
+import {formatDate} from '@utils/Formatter';
 
 @inject('AppStore', 'ReportStore', 'RoutingStore')
 @observer
 class Home extends Component {
 
   state = {};
+  reportMap = {};
 
   componentDidMount() {
-    const { listSavedReports, listRequests } = this.props.ReportStore;
+    const { listSavedReports, listRequests, items } = this.props.ReportStore;
+    items.forEach(item => {
+      this.reportMap[item.id] = item;
+    });
     listRequests();
     listSavedReports();
   }
 
   render() {
-    const { props } = this;
+    const { props, reportMap } = this;
     const { ReportStore, RoutingStore } = props;
     const { requests, savedReports } = ReportStore;
 
@@ -40,10 +45,10 @@ class Home extends Component {
                     <tr key={item.id}>
                       <td>{item.name}</td>
                       <td>{item.description}</td>
-                      <td>{item.report ? item.report.name : ''}</td>
-                      <td>{item.created}</td>
+                      <td>{reportMap[item.reptp] ? reportMap[item.reptp].name : ''}</td>
+                      <td>{formatDate(item.created, 'DD.MM.YYYY HH:mm')}</td>
                       <td>
-                        <Button variant="outline-primary" size="sm" onClick={() => RoutingStore.push(`/reports/${item.report.id}/${item.id}`)}>Перейти</Button>
+                        <Button variant="outline-primary" size="sm" onClick={() => RoutingStore.push(`/reports/${item.reptp}/${item.id}`)}>Перейти</Button>
                         <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteRequest(item.id)}>Удалить</Button>
                       </td>
                     </tr>
@@ -74,12 +79,12 @@ class Home extends Component {
                   <tr key={item.id}>
                     <td>{item.name}</td>
                     <td>{item.description}</td>
-                    <td>{item.report ? item.report.name : ''}</td>
-                    <td>{item.created}</td>
-                    <td>{item.status ? item.status.name : ''}</td>
+                    <td>{reportMap[item.reptp] ? reportMap[item.reptp].name : ''}</td>
+                    <td>{formatDate(item.created, 'DD.MM.YYYY HH:mm')}</td>
+                    <td>{item.status}</td>
                     <td>{item.format}</td>
                     <td>
-                      <Button variant="outline-primary" size="sm" disabled={item.status && item.status.id === 1}>Скачать</Button>
+                      <Button variant="outline-primary" size="sm" disabled={item.status === 1}>Скачать</Button>
                       <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteSavedReport(item.id)}>Удалить</Button>
                     </td>
                   </tr>
