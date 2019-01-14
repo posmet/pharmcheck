@@ -33,10 +33,10 @@ class Report extends Component {
       this.setState({showFilter: true});
       ReportStore.getSaved(savedId)
         .then(() => {
-          ReportStore.getReportData();
+          // ReportStore.getReportData();
         })
     } else {
-      ReportStore.getReportData();
+      // ReportStore.getReportData();
     }
   }
 
