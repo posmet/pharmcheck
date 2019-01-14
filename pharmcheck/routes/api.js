@@ -16,8 +16,8 @@ const addwhere = function (conds) {
 				var Whr = prev;
 				if (prev !== '')
 					Whr = Whr + ' and ';
-				Whr = Whr + curr.field;
-				switch (curr.cond) {
+				Whr = Whr + curr.key;
+				switch (curr.condition) {
 					case 'eq':
 						Whr = Whr + " = '" + curr.value + "'";
 						break;
@@ -104,11 +104,11 @@ module.exports = function (app) {
   app.post('/api/reports/:repid',  middleware.asyncMiddleware(async (req, res) => {
 	  const request = new sql.Request(pool);
 	  let sqlString = "";
-	  console.log(req.params.repid);
+	  console.log(req.body.filter);
 		if (req.params.repid == '1') {
-				sqlString = 'SELECT * from sales_view' + addwhere(req.body.filters);
+				sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
 		} else {
-				sqlString = 'SELECT * from remains_view' + addwhere(req.body.filters);
+				sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
 		}
     console.log(sqlString);
     const rs = await request.query(sqlString);
