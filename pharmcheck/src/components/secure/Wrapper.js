@@ -3,6 +3,7 @@ import Header from '@components/secure/Header';
 import Footer from '@components/secure/Footer';
 import Sidebar from '@components/secure/Sidebar';
 import { observer, inject } from 'mobx-react';
+import ErrorBoundary from '@components/common/ErrorBoundary';
 
 @inject('AppStore')
 class Wrapper extends Component {
@@ -18,7 +19,9 @@ class Wrapper extends Component {
         <div className="page__content">
           <Header />
           <div className="page__content--body">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </div>
           <Footer />
         </div>
