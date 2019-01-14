@@ -130,6 +130,13 @@ module.exports = function (app) {
 		const rs = await request.query(sqlString);
 		res.json(rs.recordset);
 	}));
+	app.get('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
+		const request = new sql.Request(pool);
+		const sqlString = "select * from requests where tp=1 and id=" + req.params.reqid;
+		console.log(sqlString);
+		const rs = await request.query(sqlString);
+		res.json(rs.recordset);
+	}));
 
 	app.delete('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
