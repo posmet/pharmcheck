@@ -129,7 +129,7 @@ module.exports = function (app) {
 		const sqlString = "select * from requests where tp=1";
 		console.log(sqlString);
 		const rs = await request.query(sqlString);
-		res.json(rs);
+		res.json(rs.recordset);
 	}));
 
 	app.delete('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
@@ -153,7 +153,7 @@ module.exports = function (app) {
 		const sqlString = "select * from requests where tp=2";
 		console.log(sqlString);
 		const rs = await request.query(sqlString);
-		res.json(rs);
+		res.json(rs.recordset);
 	}));
 
 	app.delete('/api/savedReports/:reqid', middleware.asyncMiddleware(async (req, res) => {
