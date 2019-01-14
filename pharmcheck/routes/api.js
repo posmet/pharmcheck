@@ -131,6 +131,10 @@ module.exports = function (app) {
     if (!rs.recordset.length) {
     	return messageManager.sendMessage(res, "Запрос не найден", 404);
 		}
+		try {
+      rs.recordset[0].fields = rs.recordset[0].fields ? JSON.parse(rs.recordset[0].fields) : [];
+      rs.recordset[0].filter = rs.recordset[0].filter ? JSON.parse(rs.recordset[0].filter) : [];
+		} catch (e) {}
     res.json(rs.recordset[0]);
   }));
 

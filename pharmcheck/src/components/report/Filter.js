@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Select from 'react-select';
 import uuid from 'uuid/v4';
+import ErrorBoundary from '@components/common/ErrorBoundary';
 import {toJS} from 'mobx';
 
 
@@ -151,71 +152,73 @@ export class Filter extends Component {
     const { from, to, onChange } = this.props;
 
     return (
-      <DragDropContext onDragEnd={this.onDragEnd}>
-        <Droppable droppableId="droppable1" direction="horizontal" isDropDisabled>
-          {(provided, snapshot) => (
-            <div className="report-draggable-container"
-                 ref={provided.innerRef}
-                 {...provided.droppableProps}
-            >
-              {from.map((item, index) => (
-                <Draggable
-                  key={item.id}
-                  draggableId={item.id}
-                  index={index}>
-                  {(provided, snapshot) => (
-                    <React.Fragment>
-                      <div className="item original"
+      <ErrorBoundary>
+        <DragDropContext onDragEnd={this.onDragEnd}>
+          <Droppable droppableId="droppable1" direction="horizontal" isDropDisabled>
+            {(provided, snapshot) => (
+              <div className="report-draggable-container"
+                   ref={provided.innerRef}
+                   {...provided.droppableProps}
+              >
+                {from.map((item, index) => (
+                  <Draggable
+                    key={item.id}
+                    draggableId={item.id}
+                    index={index}>
+                    {(provided, snapshot) => (
+                      <React.Fragment>
+                        <div className="item original"
+                             ref={provided.innerRef}
+                             {...provided.draggableProps}
+                             {...provided.dragHandleProps}
+                             style={getFieldItemStyle(
+                               snapshot.isDragging,
+                               provided.draggableProps.style
+                             )}
+                        >
+                          {item.name}
+                        </div>
+                        {snapshot.isDragging && (
+                          <div className="item clone">{item.name}</div>
+                        )}
+                      </React.Fragment>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+          <Droppable droppableId="droppable2" style={{minHeight: 100}}>
+            {(provided, snapshot) => (
+              <div className="report-droppable-container"
+                   ref={provided.innerRef}
+                   style={getSelectedListStyle(snapshot.isDraggingOver)}
+                   {...provided.droppableProps}
+              >
+                { !to.length && !snapshot.isDraggingOver ? <div className="placeholder">Перетащите сюда критерии из верхнего списка</div> : null }
+                { to.map((item, index) => (
+                  <Draggable
+                    key={item.id}
+                    draggableId={item.id}
+                    index={index}>
+                    {(provided, snapshot) => (
+                      <div className="item"
                            ref={provided.innerRef}
                            {...provided.draggableProps}
                            {...provided.dragHandleProps}
-                           style={getFieldItemStyle(
-                             snapshot.isDragging,
-                             provided.draggableProps.style
-                           )}
                       >
-                        {item.name}
+                        <FilterItem value={item} index={index} onChange={(v) => Object.assign(item, v)} onDelete={this.onDelete}/>
                       </div>
-                      {snapshot.isDragging && (
-                        <div className="item clone">{item.name}</div>
-                      )}
-                    </React.Fragment>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-        <Droppable droppableId="droppable2" style={{minHeight: 100}}>
-          {(provided, snapshot) => (
-            <div className="report-droppable-container"
-                 ref={provided.innerRef}
-                 style={getSelectedListStyle(snapshot.isDraggingOver)}
-                 {...provided.droppableProps}
-            >
-              { !to.length && !snapshot.isDraggingOver ? <div className="placeholder">Перетащите сюда критерии из верхнего списка</div> : null }
-              { to.map((item, index) => (
-                <Draggable
-                  key={item.id}
-                  draggableId={item.id}
-                  index={index}>
-                  {(provided, snapshot) => (
-                    <div className="item"
-                         ref={provided.innerRef}
-                         {...provided.draggableProps}
-                         {...provided.dragHandleProps}
-                    >
-                      <FilterItem value={item} index={index} onChange={(v) => Object.assign(item, v)} onDelete={this.onDelete}/>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </ErrorBoundary>
     );
   }
 }
