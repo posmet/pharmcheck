@@ -29,6 +29,7 @@ class Report extends Component {
     if (!ReportStore.selected) {
       RoutingStore.push('/');
     }
+    ReportStore.data = [];
     const { savedId } = match.params;
     if (savedId) {
       this.setState({showFilter: true});
