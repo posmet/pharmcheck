@@ -81,8 +81,7 @@ module.exports = function (app) {
 					{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
 					{ id: 7, name: 'Цена', type: 'number', key: 'Price' },
 					{ id: 8, name: 'Сумма', type: 'number', key: 'Sm' },
-					{ id: 9, name: 'ШК', key: 'Barcode' },
-					{ id: 10, name: 'Позиций', type: 'number', key: 'QtyPos' }
+					{ id: 9, name: 'Позиций', type: 'number', key: 'QtyPos' }
 				]
 			},
 			{
