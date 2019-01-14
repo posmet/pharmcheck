@@ -79,10 +79,10 @@ module.exports = function (app) {
 					{ id: 4, name: 'Наименование', key: 'G_name' },
 					{ id: 5, name: 'ШК', key: 'Barcode' },
 					{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
-					{ id: 4, name: 'Цена', type: 'number', key: 'Price' },
-					{ id: 4, name: 'Сумма', type: 'number', key: 'Sm' },
-					{ id: 5, name: 'ШК', key: 'Barcode' },
-					{ id: 6, name: 'Позиций', type: 'number', key: 'QtyPos' }
+					{ id: 7, name: 'Цена', type: 'number', key: 'Price' },
+					{ id: 8, name: 'Сумма', type: 'number', key: 'Sm' },
+					{ id: 9, name: 'ШК', key: 'Barcode' },
+					{ id: 10, name: 'Позиций', type: 'number', key: 'QtyPos' }
 				]
 			},
 			{
