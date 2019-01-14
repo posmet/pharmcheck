@@ -1,9 +1,11 @@
 @import '../../node_modules/bootstrap/scss/bootstrap';
+
+$input-placeholder-color: #ced4da;
+$logo-url: "../../pharm_check-win/static/logo_pharmacheck_dark_small_v3.png";
+
 @import "secure";
 @import "login";
 @import "report";
-
-$input-placeholder-color: #ced4da;
 
 @mixin placeholder {
   &::-webkit-input-placeholder {@content}

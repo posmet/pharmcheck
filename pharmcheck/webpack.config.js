@@ -31,7 +31,18 @@ module.exports = (env, argv) => {
             'css-loader',
             'sass-loader'
           ],
-        }
+        },
+        {
+          // ASSET LOADER
+          // Reference: https://github.com/webpack/file-loader
+          // Copy png, jpg, jpeg, gif, svg, woff, woff2, ttf, eot files to output
+          // Rename the file using the asset hash
+          // Pass along the updated reference to your code
+          // You can add here any file extension you want to get copied to your output
+          test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
+          loader: 'file-loader',
+          exclude: /index\.html$/
+        },
       ]
     },
     resolve: {
@@ -67,6 +78,7 @@ module.exports = (env, argv) => {
         'process.env': {
           NODE_ENV: env,
           MOCK: process.env.MOCK || false,
+          HOST: process.env.HOST ? JSON.stringify(process.env.HOST) : JSON.stringify('')
         },
       }),
       /*new PostCompile(() => {

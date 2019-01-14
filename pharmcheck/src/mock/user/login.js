@@ -5,7 +5,7 @@ const host = process.env.HOST;
 const apiRoute = `${host}/api/login`;
 const requestHandler = (request, generator) => {
   const body = JSON.parse(request.requestBody);
-  if (body.login !== 'admin' || body.password !== 'admin') {
+  if (body.username !== 'admin' || body.password !== 'admin') {
     return [500, { 'Content-Type': 'application/json' }, JSON.stringify(errorFormat("Неверный логин или пароль"))];
   }
   return [200, { 'Content-Type': 'application/json' }, JSON.stringify(successFormat)];
