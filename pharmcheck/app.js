@@ -12,6 +12,7 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const nconf = require("nconf");
 const http = require("http");
+const cors = require('cors');
 const messageManager = require('./services/Message');
 
 // view engine setup
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use(cors());
 require('./config');
 require('./boot')(app);
 require('./routes')(app);
