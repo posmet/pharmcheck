@@ -76,10 +76,10 @@ class Home extends Component {
                     <td>{item.description}</td>
                     <td>{item.report ? item.report.name : ''}</td>
                     <td>{item.created}</td>
-                    <td>{item.status.name}</td>
+                    <td>{item.status ? item.status.name : ''}</td>
                     <td>{item.format}</td>
                     <td>
-                      <Button variant="outline-primary" size="sm" disabled={item.status.id === 1}>Скачать</Button>
+                      <Button variant="outline-primary" size="sm" disabled={item.status && item.status.id === 1}>Скачать</Button>
                       <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteSavedReport(item.id)}>Удалить</Button>
                     </td>
                   </tr>
