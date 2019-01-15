@@ -42,8 +42,8 @@ const addwhere = function (conds) {
 					case 'lt':
 						Whr = Whr + " < '" + curr.value + "'";
 						break;
-					case 'bw':
-						Whr = Whr + " between '" + curr.value + "' and '" + curr.value1 + "'";
+					case 'btw':
+						Whr = Whr + " between '" + curr.value + "' and '" + curr.value2 + "'";
 				}
 				return Whr;
 
