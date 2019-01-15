@@ -98,7 +98,27 @@ module.exports = function (app) {
 					{ id: 5, name: 'Количество', type: 'number', key: 'Qty' },
 					{ id: 6, name: 'ШК', key: 'Barcode' }
 				]
+			},
+			{
+				id: 3,
+			    name: 'Позиции',
+			    description: 'Поиск по Позициям',
+			    fields: [
+				     { id: 1, name: 'Наименование', key: 'Group_Name' },
+				     { id: 2, name: 'ШК', key: 'Barcode' }
+			]
+			},
+			{
+				id: 4,
+			name: 'Аптеки',
+			description: 'Поиск по Аптекам',
+			fields: [
+				{ id: 1, name: 'Сеть', key: 'Group_Name' },
+				{ id: 2, name: 'Аптека', key: 'Ph_Name' }
+			]
 			}
+
+
 		];
 		res.json(reports);
 	}));
@@ -107,10 +127,19 @@ module.exports = function (app) {
 	  const request = new sql.Request(pool);
 	  let sqlString = "";
 	  console.log(req.body.filter);
-		if (req.params.repid == '1') {
-				sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
-		} else {
-				sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
+	  switch (req.params.repid) {
+		  case 1:
+			  sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
+			  break;
+		  case 2:
+			  sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
+			  break;
+		  case 3:
+			  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+			  break;
+		  case 4:
+			  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
+			  break;
 		}
     console.log(sqlString);
     const rs = await request.query(sqlString);
