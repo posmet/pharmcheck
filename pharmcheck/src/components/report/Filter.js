@@ -61,11 +61,24 @@ export class FilterItem extends Component {
         label: "меньше"
       }
     ];
-    const {type, condition, value} = this.props.value;
+    const {type, condition, value, value2} = this.props.value;
+    let options = [];
+    if (['date', 'number'].indexOf(type) > -1) {
+      options = this.options.slice();
+      if (['date'].indexOf(type) > -1) {
+        options.push({
+          value: "btw",
+          label: "между"
+        });
+      }
+    } else {
+      options = this.options.slice(0, 6);
+    }
     this.state = {
-      options: ['date', 'number'].indexOf(type) > -1 ? this.options : this.options.slice(0, 6),
+      options,
       condition: condition ? this.options.find(r => r.value === condition) : null,
-      value
+      value,
+      value2
     };
   }
 
@@ -75,9 +88,9 @@ export class FilterItem extends Component {
   };
 
   handleInputChange = (e) => {
-    const value = e.target.value;
-    this.setState({value});
-    this.props.onChange({value});
+    const {name, value} = e.target;
+    this.setState({[name]: value});
+    this.props.onChange({[name]: value});
   };
 
   render() {
@@ -99,11 +112,18 @@ export class FilterItem extends Component {
             />
           </div>
         </div>
-        { condition && ['nl', 'nnl'].indexOf(condition.value) === -1 ? (
-          <div className="condition__input">
-            <input className="form-control" value={this.state.value || ''} onChange={this.handleInputChange} />
-          </div>
-        ) : null }
+        <div className="condition__body">
+          { condition && ['nl', 'nnl'].indexOf(condition.value) === -1 ? (
+            <div className="condition__input">
+              <input className="form-control" placeholder="Введите значение для сравнения" value={this.state.value || ''} name="value" onChange={this.handleInputChange} />
+            </div>
+          ) : null }
+          { condition && ['btw'].indexOf(condition.value) > -1 ? (
+            <div className="condition__input">
+              <input className="form-control" placeholder="Введите значение для сравнения" value={this.state.value2 || ''} name="value2" onChange={this.handleInputChange} />
+            </div>
+          ) : null }
+        </div>
       </div>
     )
   }

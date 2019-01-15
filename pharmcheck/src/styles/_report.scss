@@ -44,13 +44,23 @@
     .condition {
       display: flex;
       flex-direction: column;
-      .condition__header {
+      &__header {
         display: flex;
         align-items: center;
         margin-bottom: 15px;
-        .condition__select {
-          width: 140px;
-          margin-left: 20px;
+      }
+      &__select {
+        width: 140px;
+        margin-left: 20px;
+      }
+      &__body {
+        display: flex;
+      }
+      &__input {
+        display: flex;
+        flex: 1;
+        &:nth-child(2) {
+          margin-left: 15px;
         }
       }
     }

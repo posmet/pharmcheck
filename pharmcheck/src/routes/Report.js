@@ -104,7 +104,11 @@ class Report extends Component {
             </div>
             <div className="report-data__body">
               <ReactDataGrid
-                columns={fields}
+                columns={fields.map(item => {
+                  let obj = Object.assign({}, item);
+                  obj.width = 10;
+                  return item;
+                })}
                 rowGetter={i => data[i]}
                 rowsCount={data.length}
                 minHeight={data.length > 8 ? 350 : data.length * 35}
