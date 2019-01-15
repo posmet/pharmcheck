@@ -15,23 +15,20 @@ class SidebarLink extends Component {
         {name}
       </Tooltip>
     );
-    return (
-      <>
-      {sidebar === 'sm' ? (
-        <OverlayTrigger placement="right" overlay={tooltip}>
-          <Link to={path}>
-            <span>{name}</span>
-            <FontAwesomeIcon icon={icon} />
-          </Link>
-        </OverlayTrigger>
-      ) : (
-        <Link to={path}>
-          <span>{name}</span>
-          <FontAwesomeIcon icon={icon} />
-        </Link>
-      )}
-      </>
+    const link = (
+      <Link to={path}>
+        <span>{name}</span>
+        <FontAwesomeIcon icon={icon} />
+      </Link>
     );
+    if (sidebar === 'sm') {
+      return (
+        <OverlayTrigger placement="right" overlay={tooltip}>
+          { link }
+        </OverlayTrigger>
+      );
+    }
+    return link;
   }
 }
 

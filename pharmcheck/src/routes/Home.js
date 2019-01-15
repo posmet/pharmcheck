@@ -46,7 +46,7 @@ class Home extends Component {
                       <td>{item.name}</td>
                       <td>{item.description}</td>
                       <td>{reportMap[item.reptp] ? reportMap[item.reptp].name : ''}</td>
-                      <td>{formatDate(item.created, 'DD.MM.YYYY HH:mm')}</td>
+                      <td>{formatDate(item.created, 'MM.DD.YYYY')}</td>
                       <td>
                         <Button variant="outline-primary" size="sm" onClick={() => RoutingStore.push(`/reports/${item.reptp}/${item.id}`)}>Перейти</Button>
                         <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteRequest(item.id)}>Удалить</Button>
@@ -80,7 +80,7 @@ class Home extends Component {
                     <td>{item.name}</td>
                     <td>{item.description}</td>
                     <td>{reportMap[item.reptp] ? reportMap[item.reptp].name : ''}</td>
-                    <td>{formatDate(item.created, 'DD.MM.YYYY HH:mm')}</td>
+                    <td>{formatDate(item.created, 'MM.DD.YYYY')}</td>
                     <td>{item.status}</td>
                     <td>{item.format}</td>
                     <td>
