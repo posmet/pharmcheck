@@ -2,12 +2,47 @@ import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
 import { Link } from 'react-router-dom';
-import {Collapse} from 'react-bootstrap';
+import {Collapse, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import ErrorBoundary from '@components/common/ErrorBoundary';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faPowerOff, faDollarSign, faStar } from '@fortawesome/free-solid-svg-icons';
+
+class SidebarLink extends Component {
+  render() {
+    const {path, icon, name, sidebar} = this.props;
+    const tooltip = (
+      <Tooltip id="tooltip">
+        {name}
+      </Tooltip>
+    );
+    return (
+      <>
+      {sidebar === 'sm' ? (
+        <OverlayTrigger placement="right" overlay={tooltip}>
+          <Link to={path}>
+            <span>{name}</span>
+            <FontAwesomeIcon icon={icon} />
+          </Link>
+        </OverlayTrigger>
+      ) : (
+        <Link to={path}>
+          <span>{name}</span>
+          <FontAwesomeIcon icon={icon} />
+        </Link>
+      )}
+      </>
+    );
+  }
+}
 
 @inject('UserStore', 'AppStore', 'ReportStore', 'RoutingStore')
 @observer
 class Sidebar extends Component {
+
+  iconMap = {
+    1: faDollarSign,
+    2: faStar
+  };
 
   constructor(props) {
     super(props);
@@ -42,6 +77,12 @@ class Sidebar extends Component {
       `sidebar--${sidebar}`
     );
 
+    const tooltip = (
+      <Tooltip id="tooltip">
+        <strong>Holy guacamole!</strong> Check this info.
+      </Tooltip>
+    );
+
     return (
       <ErrorBoundary>
         <nav className={classes}>
@@ -51,17 +92,19 @@ class Sidebar extends Component {
 
           <ul className="list-unstyled components">
             <li className={RoutingStore.location.pathname === '/' ? 'active' : ''}>
-              <Link to='/'>Личный кабинет</Link>
+              <SidebarLink path={'/'} name="Личный кабинет" icon={faHome} sidebar={sidebar} />
             </li>
             <li>
-              <a href="javascript:void(0)" onClick={toggleMenu.bind(this, 'menuReportIsOpen')} data-toggle="collapse" className="dropdown-toggle">Отчеты</a>
-              <Collapse in={menuReportIsOpen}>
+              <span>
+                <a href="javascript:void(0)" onClick={toggleMenu.bind(this, 'menuReportIsOpen')} data-toggle="collapse" className="dropdown-toggle">Отчеты</a>
+              </span>
+              <Collapse in={menuReportIsOpen || sidebar === 'sm'}>
                 <ul className="list-unstyled">
                   { items.map(request => {
                     const path = `/reports/${request.id}`;
                     return (
                       <li key={request.id} className={RoutingStore.location.pathname === path ? 'active' : ''}>
-                        <Link to={path}>{request.name}</Link>
+                        <SidebarLink path={path} name={request.name} icon={this.iconMap[request.id]} sidebar={sidebar} />
                       </li>
                     )
                   }) }
@@ -69,7 +112,7 @@ class Sidebar extends Component {
               </Collapse>
             </li>
             <li>
-              <a href="javascript:void(0)" onClick={this.logout}>Выйти</a>
+              <SidebarLink path={'/login'} name="Выйти" icon={faPowerOff} sidebar={sidebar} />
             </li>
           </ul>
           <div className="logo" />

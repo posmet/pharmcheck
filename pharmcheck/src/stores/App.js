@@ -14,7 +14,11 @@ class AppStore {
   constructor() {
     const { cookie } = this;
     const token = cookie.get('pharma_token'); //this thing returns 'undefined' string if no token
+    const sidebar = cookie.get('pharma_sidebar'); //this thing returns 'undefined' string if no token
     this.token = token !== 'undefined' ? token : null;
+    if (sidebar) {
+      this.sidebar = sidebar;
+    }
   }
 
   get cookie() {
@@ -23,6 +27,7 @@ class AppStore {
 
   collapseSidebar  = () => {
     this.sidebar = this.sidebar === 'lg' ? 'sm' : 'lg';
+    this.cookie.set('pharma_sidebar', this.sidebar);
   };
 
   setToken(token, remember) {
