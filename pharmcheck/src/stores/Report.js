@@ -59,11 +59,12 @@ class ReportStore extends AbstractStore {
     const body = {
       filter: this.saved.filter
     };
-    const start = moment();
+    const start = new Date().getTime();
     try {
       const res = await post({url, body, isGlobal: true});
+      const end = new Date().getTime() - start;
+      this.dataRequestTime = end > 0 ? Math.round((end/1000) * 10)/10 : end;
       this.data = res.body;
-      this.dataRequestTime = moment().diff(start, 'seconds');
     } catch(e) {
       errorHandler.call(this, {showToast: true}, e);
       this.dataRequestTime = 0;

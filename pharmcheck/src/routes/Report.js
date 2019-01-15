@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { SettingsModal, RequestModal, SaveModal } from "@components/report/Modals";
 import { Filter } from "@components/report/Filter";
-import {formatDate} from '@utils/Formatter';
+import ReactDataGrid from "react-data-grid";
 import uuid from 'uuid/v4';
 
 @inject('AppStore', 'ReportStore', 'RoutingStore')
@@ -29,6 +29,8 @@ class Report extends Component {
     if (!ReportStore.selected) {
       RoutingStore.push('/');
     }
+    ReportStore.data = [];
+    ReportStore.dataRequestTime = 0;
     const { savedId } = match.params;
     if (savedId) {
       this.setState({showFilter: true});
@@ -101,7 +103,13 @@ class Report extends Component {
               </ButtonToolbar>
             </div>
             <div className="report-data__body">
-              <Table responsive bordered hover size="sm">
+              <ReactDataGrid
+                columns={fields}
+                rowGetter={i => data[i]}
+                rowsCount={data.length}
+                minHeight={data.length > 8 ? 350 : data.length * 35}
+              />
+              {/*<Table responsive bordered hover size="sm">
                 <thead>
                 <tr>
                   {fields.map((item, index) => <th key={index}>{item.name}</th>)}
@@ -116,7 +124,7 @@ class Report extends Component {
                   )
                 })}
                 </tbody>
-              </Table>
+              </Table>*/}
             </div>
           </div>
 

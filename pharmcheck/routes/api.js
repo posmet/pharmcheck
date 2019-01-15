@@ -125,6 +125,21 @@ module.exports = function (app) {
 		res.json(messageManager.buildSuccess());
 	}));
 
+  app.get('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
+    const request = new sql.Request(pool);
+    const sqlString = `select * from requests where id=${req.params.reqid}`;
+    console.log(sqlString);
+    const rs = await request.query(sqlString);
+    if (!rs.recordset.length) {
+    	return messageManager.sendMessage(res, "Запрос не найден", 404);
+		}
+		try {
+      rs.recordset[0].fields = rs.recordset[0].fields ? JSON.parse(rs.recordset[0].fields) : [];
+      rs.recordset[0].filter = rs.recordset[0].filter ? JSON.parse(rs.recordset[0].filter) : [];
+		} catch (e) {}
+    res.json(rs.recordset[0]);
+  }));
+
 	app.get('/api/requests', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
 		const sqlString = "select * from requests where tp=1";
