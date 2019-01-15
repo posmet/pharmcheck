@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import {Collapse, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import ErrorBoundary from '@components/common/ErrorBoundary';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faPowerOff, faDollarSign, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faPowerOff, faDollarSign, faStar, faCrosshairs, faNotesMedical } from '@fortawesome/free-solid-svg-icons';
 
 class SidebarLink extends Component {
   render() {
@@ -18,7 +18,7 @@ class SidebarLink extends Component {
     const link = (
       <Link to={path}>
         <span>{name}</span>
-        <FontAwesomeIcon icon={icon} />
+        { icon ? <FontAwesomeIcon icon={icon} /> : null }
       </Link>
     );
     if (sidebar === 'sm') {
@@ -38,7 +38,9 @@ class Sidebar extends Component {
 
   iconMap = {
     1: faDollarSign,
-    2: faStar
+    2: faStar,
+    3: faCrosshairs,
+    4: faNotesMedical
   };
 
   constructor(props) {
@@ -72,12 +74,6 @@ class Sidebar extends Component {
     const classes = classnames(
       'sidebar',
       `sidebar--${sidebar}`
-    );
-
-    const tooltip = (
-      <Tooltip id="tooltip">
-        <strong>Holy guacamole!</strong> Check this info.
-      </Tooltip>
     );
 
     return (

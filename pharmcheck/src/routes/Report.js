@@ -18,6 +18,14 @@ class Report extends Component {
     requestModal: false,
     saveModal: false
   };
+  sidebar = null;
+
+  componentWillReact() {
+    const {sidebar} = this.props.AppStore;
+    if (sidebar !== this.sidebar) {
+      this.sidebar = sidebar;
+    }
+  }
 
   componentWillMount() {
     const {ReportStore, match} = this.props;
@@ -25,10 +33,11 @@ class Report extends Component {
   }
 
   componentDidMount() {
-    const {ReportStore, RoutingStore, match} = this.props;
+    const {ReportStore, RoutingStore, AppStore, match} = this.props;
     if (!ReportStore.selected) {
       RoutingStore.push('/');
     }
+    this.sidebar = AppStore.sidebar;
     ReportStore.data = [];
     ReportStore.dataRequestTime = 0;
     const { savedId } = match.params;
@@ -74,7 +83,7 @@ class Report extends Component {
 
   render() {
     const { props, state, toggleModal, onSubmitSettings, onSubmitRequest, onSubmitReport, onRefresh } = this;
-    const { ReportStore } = props;
+    const { ReportStore, AppStore } = props;
     const { showFilter, settingsModal, requestModal, saveModal } = state;
     const { selected, saved, data, dataRequestTime } = ReportStore;
 
@@ -106,7 +115,7 @@ class Report extends Component {
               <ReactDataGrid
                 columns={fields.map(item => {
                   let obj = Object.assign({}, item);
-                  obj.width = 10;
+                  obj.width = this.sidebar === AppStore.sidebar ? 10 : 15;
                   return item;
                 })}
                 rowGetter={i => data[i]}
