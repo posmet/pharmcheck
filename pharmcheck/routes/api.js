@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const addwhere = function (conds) {
 	let sqlString = '';
+	console.log(conds);
 	if (conds) {
 		if (conds.length > 0) {
 			sqlString = sqlString + ' where ';
