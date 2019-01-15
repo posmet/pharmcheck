@@ -127,22 +127,21 @@ module.exports = function (app) {
   app.post('/api/reports/:repid',  middleware.asyncMiddleware(async (req, res) => {
 	  const request = new sql.Request(pool);
 	  let sqlString = "";
-	  console.log(req.body.filter);
-	  switch (req.params.repid) {
-		  case 1:
-			  sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
-			  break;
-		  case 2:
-			  sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
-			  break;
-		  case 3:
-			  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
-			  break;
-		  case 4:
-			  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
-			  break;
+	  console.log(req.params.repid);
+	  if (req.params.repid == 1) {
+		  sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
+	  }
+	  if (req.params.repid == 2) {
+		  sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
+	  }
+	  if (req.params.repid == 3) {
+		  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+	  }
+	  if (req.params.repid == 4) {
+    	  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
 		}
-    console.log(sqlString);
+	  console.log(sqlString);
+	  console.log('Query');
     const rs = await request.query(sqlString);
     res.json(rs.recordset);
   }));
