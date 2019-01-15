@@ -105,7 +105,7 @@ module.exports = function (app) {
 			    name: 'Позиции',
 			    description: 'Поиск по Позициям',
 			    fields: [
-				     { id: 1, name: 'Наименование', key: 'Group_Name' },
+				     { id: 1, name: 'Наименование', key: 'G_name' },
 				     { id: 2, name: 'ШК', key: 'Barcode' }
 			]
 			},
