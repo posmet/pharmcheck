@@ -145,6 +145,21 @@ module.exports = function (app) {
     const rs = await request.query(sqlString);
     res.json(rs.recordset);
   }));
+	app.post('/api/table/:key', middleware.asyncMiddleware(async (req, res) => {
+		const request = new sql.Request(pool);
+		let sqlString = "";
+		console.log(req.params.repid);
+		if (req.params.key == 'G_name') {
+			sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+		}
+		if (req.params.key == 'Ph_Name') {
+			sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
+		}
+		console.log(sqlString);
+		console.log('Query');
+		const rs = await request.query(sqlString);
+		res.json(rs.recordset);
+	}));
 
 	app.post('/api/requests/:reqid', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
