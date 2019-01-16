@@ -47,6 +47,7 @@
     "react-loadable": "^5.5.0",
     "react-loader-spinner": "^2.0.6",
     "react-mock": "^6.0.1",
+    "react-overlays": "^1.1.1",
     "react-router-dom": "^4.3.1",
     "react-select": "^2.1.0",
     "react-toastify": "^4.4.0",

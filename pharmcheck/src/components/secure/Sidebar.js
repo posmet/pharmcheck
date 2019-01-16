@@ -6,10 +6,10 @@ import {Collapse, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import ErrorBoundary from '@components/common/ErrorBoundary';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faHome, faPowerOff, faDollarSign, faStar, faCrosshairs, faNotesMedical } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faPowerOff, faDollarSign, faStar, faCrosshairs, faNotesMedical, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { faFilePdf } from '@fortawesome/free-regular-svg-icons';
 
-library.add(faHome, faPowerOff, faDollarSign, faStar, faCrosshairs, faNotesMedical, faFilePdf);
+library.add(faHome, faPowerOff, faDollarSign, faStar, faCrosshairs, faNotesMedical, faFilePdf, faCalendarAlt);
 
 class SidebarLink extends Component {
   render() {

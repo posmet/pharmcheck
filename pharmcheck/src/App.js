@@ -8,10 +8,10 @@ import RoutingStore from '@stores/Routing';
 import ReportStore from '@stores/Report';
 import moment from 'moment';
 
-// import 'react-datepicker/dist/react-datepicker.css';
 // import 'react-contexify/dist/ReactContexify.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import '@styles/main.scss';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const DATA = {
   UserStore,
