@@ -78,6 +78,15 @@
       &__input {
         display: flex;
         flex: 1;
+        .react-select__control {
+          display: flex;
+          flex: 1;
+          .react-select__input {
+            & > input {
+              opacity: 1 !important;
+            }
+          }
+        }
         &:nth-child(2) {
           margin-left: 15px;
         }

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Select from 'react-select';
 import uuid from 'uuid/v4';
@@ -9,8 +10,10 @@ import {toJS} from 'mobx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 import { Portal } from 'react-overlays';
+import AsyncSelect from 'react-select/lib/Async';
 import * as moment from 'moment';
 const offset = moment().utcOffset();
+import { observer, inject } from 'mobx-react';
 
 
 const getFieldItemStyle = (isDragging, draggableStyle) => ({
@@ -40,6 +43,7 @@ const CalendarContainer = ({children}) => {
   )
 };
 
+@inject('ReferenceStore')
 export class FilterItem extends Component {
 
   placeholder = "Введите значение для сравнения";
@@ -82,7 +86,7 @@ export class FilterItem extends Component {
         label: "меньше"
       }
     ];
-    const {type, condition, value, value2} = this.props.value;
+    const {key, type, condition, value, value2} = this.props.value;
     let options = [];
     if (['date', 'number'].indexOf(type) > -1) {
       options = this.options.slice();
@@ -96,16 +100,49 @@ export class FilterItem extends Component {
       options = this.options.slice(0, 6);
     }
     this.state = {
-      options,
+      conditionOptions: options,
       condition: condition ? this.options.find(r => r.value === condition) : null,
       value,
-      value2
+      value2,
+      selectOptions: [],
+      selectIsLoading: false
     };
+    if (['G_name', 'Ph_Name'].indexOf(key) > -1 && condition === 'eq') {
+      this.search(value);
+    }
   }
 
-  handleSelectChange = (v) => {
-    this.setState({condition: v});
-    this.props.onChange({condition: v.value});
+  search = (str) => {
+    str = str || '';
+    if (!str.length) {
+      return false;
+    }
+    const key = this.props.value.key;
+    this.props.ReferenceStore.list(key, [{key, condition: 'cn', value: str}])
+      .then(selectOptions => this.setState({selectOptions}))
+      .then(() => this.setState({selectIsLoading: false}));
+  };
+
+  handleSelectChange = (key, v) => {
+    if (key === 'condition') {
+      this.setState({[key]: v});
+      this.props.onChange({[key]: v.value});
+    } else {
+      let obj = {[key]: v.label, valueID: v.value};
+      this.setState(obj);
+      this.props.onChange(obj);
+    }
+  };
+
+  handleSelectInputChange = (str, { action }) => {
+    if (action === 'menu-close' || action === 'input-blur' || action === 'set-value') { return }
+    let stateOpts = {
+      value: str
+    };
+    if (str.length) {
+      stateOpts.selectIsLoading = true;
+    }
+    this.setState(stateOpts, () => this.search(str));
   };
 
   handleInputChange = (e) => {
@@ -121,9 +158,9 @@ export class FilterItem extends Component {
   };
 
   render() {
-    const {options, condition} = this.state;
-    const {value, index, onDelete} = this.props;
-    const {name, type} = value;
+    const {value, value2, conditionOptions, condition, selectIsLoading, selectOptions} = this.state;
+    const {index, onDelete} = this.props;
+    const {name, type, key} = this.props.value;
     let input1 = null;
     let input2 = null;
     if (condition) {
@@ -131,7 +168,7 @@ export class FilterItem extends Component {
         if (type === 'date') {
           const pickerAttrs = {
             ref: (c) => this.input1 = c,
-            selected: this.state.value ? moment(this.state.value) : null,
+            selected: value ? moment(value) : null,
             dateFormat: "MM.DD.YYYY",
             className: "form-control",
             placeholderText: this.placeholder,
@@ -140,8 +177,8 @@ export class FilterItem extends Component {
           };
           if (['btw'].indexOf(condition.value) > -1) {
             pickerAttrs.selectsStart = true;
-            pickerAttrs.startDate = this.state.value;
-            pickerAttrs.endDate = this.state.value2;
+            pickerAttrs.startDate = value;
+            pickerAttrs.endDate = value2;
           }
           input1 = (
             <InputGroup className="condition__input">
@@ -151,11 +188,27 @@ export class FilterItem extends Component {
               <DatePicker {...pickerAttrs}/>
             </InputGroup>
           );
+        } else if (['G_name', 'Ph_Name'].indexOf(key) > -1 && condition.value === 'eq') {
+          input1 = (
+            <Select
+              className="condition__input react-select"
+              placeholder={this.placeholder}
+              loadingMessage={() => ''}
+              isLoading={selectIsLoading}
+              noOptionsMessage={() => value && value.length ? 'Ничего не найдено' : ''}
+              menuPosition="fixed"
+              classNamePrefix="react-select"
+              menuShouldBlockScroll
+              inputValue={value}
+              onInputChange={this.handleSelectInputChange}
+              onChange={this.handleSelectChange.bind(this, 'value')}
+              options={selectOptions} />
+          );
         } else {
           input1 = (
             <div className="condition__input">
               <input className="form-control" placeholder={this.placeholder}
-                     value={this.state.value || ''}
+                     value={value || ''}
                      name="value" onChange={this.handleInputChange}/>
             </div>
           );
@@ -170,14 +223,14 @@ export class FilterItem extends Component {
               </InputGroup.Prepend>
               <DatePicker
                 ref={(c) => this.input2 = c}
-                selected={this.state.value2 ? moment(this.state.value2) : null}
+                selected={value2 ? moment(value2) : null}
                 dateFormat="MM.DD.YYYY"
                 className="form-control"
                 placeholderText={this.placeholder}
                 popperContainer={CalendarContainer}
                 selectsEnd
-                startDate={this.state.value}
-                endDate={this.state.value2}
+                startDate={value}
+                endDate={value2}
                 onChange={this.handleDateChange.bind(this, 'value2')}
               />
             </InputGroup>
@@ -186,7 +239,7 @@ export class FilterItem extends Component {
           input2 = (
             <div className="condition__input">
               <input className="form-control" placeholder="Введите значение для сравнения"
-                     value={this.state.value2 || ''}
+                     value={value2 || ''}
                      name="value2" onChange={this.handleInputChange}/>
             </div>
           );
@@ -195,16 +248,17 @@ export class FilterItem extends Component {
     }
     return (
       <div className="condition">
-        <div className="close" onClick={onDelete.bind(null, value, index)}>×</div>
+        <div className="close" onClick={onDelete.bind(null, this.props.value, index)}>×</div>
         <div className="condition__header">
           <div className="condition__name">{name}</div>
           <div className="condition__select">
             <Select
               placeholder="Условие"
+              isSearchable={false}
               menuPosition="fixed"
               value={condition}
-              onChange={this.handleSelectChange}
-              options={options}
+              onChange={this.handleSelectChange.bind(this, 'condition')}
+              options={conditionOptions}
             />
           </div>
         </div>

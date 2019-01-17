@@ -49,7 +49,7 @@
     "react-mock": "^6.0.1",
     "react-overlays": "^1.1.1",
     "react-router-dom": "^4.3.1",
-    "react-select": "^2.1.0",
+    "react-select": "^2.2.0",
     "react-toastify": "^4.4.0",
     "serve-favicon": "^2.3.0",
     "universal-cookie": "^3.0.4",

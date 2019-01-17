@@ -6,6 +6,7 @@ import UserStore from '@stores/User';
 import AppStore from '@stores/App';
 import RoutingStore from '@stores/Routing';
 import ReportStore from '@stores/Report';
+import ReferenceStore from '@stores/Reference';
 import moment from 'moment';
 
 // import 'react-contexify/dist/ReactContexify.min.css';
@@ -18,6 +19,7 @@ const DATA = {
   AppStore,
   RoutingStore,
   ReportStore,
+  ReferenceStore
 };
 
 moment.locale('ru');
