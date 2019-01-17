@@ -256,6 +256,7 @@ export class FilterItem extends Component {
               placeholder="Условие"
               isSearchable={false}
               menuPosition="fixed"
+              menuShouldBlockScroll
               value={condition}
               onChange={this.handleSelectChange.bind(this, 'condition')}
               options={conditionOptions}
