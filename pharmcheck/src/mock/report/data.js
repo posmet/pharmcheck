@@ -12,10 +12,9 @@ export const reports = [
 		{ id: 4, name: 'Наименование', key: 'G_name' },
 		{ id: 5, name: 'ШК', key: 'Barcode' },
 		{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
-		{ id: 4, name: 'Цена', type: 'number', key: 'Price' },
-        { id: 4, name: 'Сумма', type: 'number', key: 'Sm'},
-		{ id: 5, name: 'ШК', key: 'Barcode' },
-		{ id: 6, name: 'Позиций', type: 'number', key: 'QtyPos' }
+		{ id: 7, name: 'Цена', type: 'number', key: 'Price' },
+    { id: 8, name: 'Сумма', type: 'number', key: 'Sm'},
+		{ id: 9, name: 'Позиций', type: 'number', key: 'QtyPos' }
     ]
   },
   {
@@ -53,7 +52,7 @@ export const getReportData = function (id) {
     }
     return value;
   };
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
     const obj = {};
     report.fields.forEach(item => {
       obj[item.key] = getFakeValue(item.type);

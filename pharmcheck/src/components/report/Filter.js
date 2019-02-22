@@ -160,7 +160,7 @@ export class FilterItem extends Component {
   render() {
     const {value, value2, conditionOptions, condition, selectIsLoading, selectOptions} = this.state;
     const {index, onDelete} = this.props;
-    const {name, type, key} = this.props.value;
+    const {title, type, key} = this.props.value;
     let input1 = null;
     let input2 = null;
     if (condition) {
@@ -250,7 +250,7 @@ export class FilterItem extends Component {
       <div className="condition">
         <div className="close" onClick={onDelete.bind(null, this.props.value, index)}>×</div>
         <div className="condition__header">
-          <div className="condition__name">{name}</div>
+          <div className="condition__name">{title}</div>
           <div className="condition__select">
             <Select
               placeholder="Условие"
@@ -339,10 +339,10 @@ export class Filter extends Component {
                                provided.draggableProps.style
                              )}
                         >
-                          {item.name}
+                          {item.title}
                         </div>
                         {snapshot.isDragging && (
-                          <div className="item clone">{item.name}</div>
+                          <div className="item clone">{item.title}</div>
                         )}
                       </React.Fragment>
                     )}
