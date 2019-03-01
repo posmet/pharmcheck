@@ -5,16 +5,17 @@ import {errorHandler, success} from '@utils/Api';
 import { createTransformer } from 'mobx-utils';
 import moment from 'moment';
 import Immutable from 'seamless-immutable';
+import uuid from 'uuid/v4';
 
 class ReportStore extends AbstractStore {
 
   @observable items = [];
   // @observable data = [];
   @observable data = [
-    {id: 0, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2},
-    {id: 1, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 40, Sm: 200, QtyPos: 2},
-    {id: 2, Group_Name: 1, Ph_Name: "Аптека2", dat: "131313", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2},
-    {id: 3, Group_Name: 1, Ph_Name: "Аптека2", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2},
+    {id: 0, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
+    {id: 1, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 40, Sm: 200, QtyPos: 2, frontId: uuid()},
+    {id: 2, Group_Name: 1, Ph_Name: "Аптека2", dat: "131313", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
+    {id: 3, Group_Name: 1, Ph_Name: "Аптека2", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
   ];
   @observable requests = [];
   @observable savedReports = [];
@@ -111,6 +112,7 @@ class ReportStore extends AbstractStore {
       this.dataRequestTime = end > 0 ? Math.round((end/1000) * 10)/10 : end;
       this.data = res.body ? Immutable(res.body.map((item, i) => {
         item.id = i;
+        item.frontId = uuid();
         return item;
       })) : [];
     } catch(e) {

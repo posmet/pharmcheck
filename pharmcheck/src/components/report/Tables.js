@@ -9,7 +9,7 @@ import {
   GroupingState,
   IntegratedGrouping,
   TreeDataState,
-  CustomTreeData
+  CustomTreeData,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -31,10 +31,9 @@ import { AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css";
 import classNames from 'classnames';
 
-
 const summaryKey = 'frontSummary';
 const rowsTitleKey = 'frontRowsTitle';
-const separator = '.^.';
+const separator = '#_#';
 
 const getFieldItemStyle = (isDragging, draggableStyle, snapshot) => {
   if (!snapshot.isDropAnimating) {
@@ -71,6 +70,14 @@ const styles = theme => ({
   },
 });
 
+const cellStyles = theme => ({
+  icon: {
+    marginBottom: theme.spacing.unit / 2,
+    marginLeft: theme.spacing.unit,
+    verticalAlign: 'middle',
+  },
+});
+
 const TableComponentBase = ({ classes, ...restProps }) => (
   <Table.Table
     {...restProps}
@@ -84,6 +91,19 @@ const HeaderCellComponentBase = ({ classes, ...restProps }) => (
     className="test"
   />
 );
+
+const BandCellBase = ({children, tableRow, tableColumn, column, classes, ...restProps}) => {
+  return (
+    <TableBandHeader.Cell
+      {...restProps}
+      column={column}
+    >
+      <strong>
+        {children.replace(new RegExp(`${separator}\\S+${separator}`), '')}
+      </strong>
+    </TableBandHeader.Cell>
+  );
+};
 
 const tableMessages = {
   noData: '',
@@ -164,6 +184,7 @@ class ExtendedDroppableColumn extends React.PureComponent {
 
 const TableComponent = withStyles(styles, { name: 'TableComponent' })(TableComponentBase);
 const HeaderCellComponent = withStyles(styles, { name: 'HeaderCellComponent' })(HeaderCellComponentBase);
+const BandCell = withStyles(cellStyles, { name: 'BandCell' })(BandCellBase);
 
 export class ExtendedTable extends React.PureComponent {
 
@@ -214,7 +235,7 @@ export class ExtendedTable extends React.PureComponent {
 
   };
 
-  getBandedTree = (index, node, parent, tableColumns) => {
+  getBandedTree = (index, node, tableColumns) => {
     const { columns, values } = this.props.extended;
     if (columns.length < index + 1) {
       return false;
@@ -222,38 +243,132 @@ export class ExtendedTable extends React.PureComponent {
     if (!node.columnName) {
       node.columnName = columns[index].name;
     }
+    let parentColumnName = '';
     if (!index) {
       node.title = columns[index].title;
       node.isParent = true;
+    } else {
+      parentColumnName = `${node.columnName}${separator}`;
     }
     const isLast = columns.length < index + 2;
     let groupedRows = _.groupBy(!index ? this.props.rows : node.rows, columns[index].name);
-    const parentColumnName = parent ? `${node.columnName}${separator}` : '';
-    node.children = _.keys(groupedRows).map(v => ({columnName: `${parentColumnName}${columns[index].name}${separator}${v}`, nodeTitle: v, title: `${v}${!node.isParent ? `(${node.title})` : ''}`, rows: groupedRows[v]}));
-    if (isLast) {
-      _.keys(groupedRows).forEach(v => {
-        tableColumns.push({name: `${parentColumnName}${columns[index].name}${separator}${v}`, title: v});
-      });
-    }
-    node.children.forEach(v => (() => {
-      if (!v.isValue) {
-        this.getBandedTree(index + 1, v, _.cloneDeep(node), tableColumns);
+    node.children = [];
+    _.keys(groupedRows).forEach((v, i) => {
+      const name = `${parentColumnName}${columns[index].name}${separator}${v}`;
+      let obj = {
+        columnName: name,
+        titleClean: v,
+        title: `${v}${!node.isParent ? `${separator}${node.title}${separator}` : ''}`,
+        grouping: node.grouping ? node.grouping.concat([{name: columns[index].name, value: v}]) : [{name: columns[index].name, value: v}],
+      };
+      // if (values.length > 1) {
+      //   node.children.push({title: v, isLabel: true, columnName: v, children: []});
+      //   console.log(v);
+      //   values.forEach(vv => {
+      //     node.children[i].children.push({columnName: `${name}${vv.name}`, name: `${name}${vv.name}`, title: `${v} - Сумма по полю ${vv.title}`});
+      //     if (isLast) {
+      //       tableColumns.push({...obj, name: `${name}${vv.name}`, nameClean: vv.name, title: `${v} - Сумма по полю ${vv.title}`});
+      //     }
+      //   });
+      // } else {
+        node.children.push({...obj, rows: groupedRows[v]});
+        if (isLast) {
+          tableColumns.push({...obj, name, nameClean: columns[index].name, title: v});
+        }
+      // }
+    });
+    node.children.forEach(v => {
+      if (v.isLabel) {
+        v.children.forEach(c => {
+          this.getBandedTree(index + 1, c, tableColumns);
+        });
+      } else if (!v.isValue) {
+        this.getBandedTree(index + 1, v, tableColumns);
       }
-    })(index, v, node));
+    });
     if (values.length > 0) {
-      node.children = node.children.concat(values.map(v => ({isValue: true, columnName: `${parentColumnName}${v.name}`, title: `${node.nodeTitle || node.title} - Сумма по полю ${v.title}`})));
+      node.children = node.children.concat(values.map(v => ({
+        isValue: true,
+        columnName: `${parentColumnName}${v.name}`,
+        title: `${node.titleClean || node.title} - Сумма по полю ${v.title}`
+      })));
       values.forEach(v => {
         tableColumns.push({
           name: `${parentColumnName}${v.name}`,
-          title: `${node.nodeTitle || node.title} - Сумма по полю ${v.title}`
+          title: `${node.titleClean || node.title} - Сумма по полю ${v.title}`,
+          isValue: true,
+          // rows: node.children.filter(c => !v.isValue).reduce((sum, v) => sum.concat(v.rows || []), [])
         });
       });
     }
   };
 
+  getBandedRowTree = (index, node, tableRows, tableColumns) => {
+    const { rows } = this.props.extended;
+    if (rows.length < index + 1) {
+      return false;
+    }
+    if (!index) {
+      node.title = rows[index].title;
+      node.isParent = true;
+      node.id = null;
+    }
+    let groupedRows = _.groupBy(!index ? this.props.rows : node.rows, rows[index].name);
+    node.children = _.keys(groupedRows).map(v => {
+      const id = tableRows.length;
+      tableRows.push(this.fillRow(v, rows[index].name, node.id, id + 1, node.grouping ? node.grouping.concat([{name: rows[index].name, value: v}]) : [{name: rows[index].name, value: v}], tableColumns));
+      return {
+        grouping: node.grouping ? node.grouping.concat([{name: rows[index].name, value: v}]) : [{name: rows[index].name, value: v}],
+        rows: groupedRows[v],
+        title: v,
+        name: rows[index].name,
+        id: id + 1
+      }
+    });
+    node.children.forEach(v => {
+      this.getBandedRowTree(index + 1, v, tableRows, tableColumns);
+    });
+  };
+
   getChildRows = (row, rootRows) => {
     const childRows = rootRows.filter(r => r.parentId === (row ? row.id : null));
     return childRows.length ? childRows : null;
+  };
+
+  arrayToJS = (array) => {
+    return array.map(v => toJS(v));
+  };
+
+  getRowAggregateValue = (rowName, rowValue, rowGrouping, columnName, columnValue, columnGrouping, valueName) => {
+    console.log(rowName, columnName, valueName);
+    rowGrouping = rowGrouping || [];
+    columnGrouping = columnGrouping || [];
+    let result = this.props.rows;
+    columnGrouping.forEach(group => {
+      result = result.filter(v => v[group.name] == group.value);
+    });
+    rowGrouping.forEach(group => {
+      result = result.filter(v => v[group.name] == group.value);
+    });
+    console.log(rowName, rowValue, rowGrouping, columnName, columnValue, columnGrouping, result);
+    return result.reduce((sum, v) => {
+      let floatValue = parseFloat(v[valueName]);
+      return isNaN(floatValue) ? sum : sum + floatValue;
+    }, 0);
+  };
+
+  fillRow = (rowValue, rowName, parentId, id, rowGrouping, tableColumns) => {
+    let obj = {[rowsTitleKey]: rowValue, parentId, id, grouping: rowGrouping};
+    tableColumns.forEach(column => {
+      if (column.name !== rowsTitleKey) {
+        this.props.extended.values.forEach(v => {
+          let value = this.getRowAggregateValue(rowName, rowValue, rowGrouping, column.titleClean, column.nameClean, column.grouping, v.name);
+          console.log(value, column.name);
+          obj[column.name] = value;
+        });
+      }
+    });
+    return obj;
   };
 
   changeExpandedRowIds = (expandedRowIds) => {
@@ -273,16 +388,32 @@ export class ExtendedTable extends React.PureComponent {
     let grouping = [];
     if (columns.length) {
       let bandedObj = {};
-      this.getBandedTree(0, bandedObj, null, tableColumns);
+      this.getBandedTree(0, bandedObj, tableColumns);
       banded = [bandedObj];
       // tableColumns = _.sortBy(tableColumns, 'name');
+    } else if (values.length) {
+      values.forEach(v => {
+        tableColumns.push({
+          name: `${v.name}`,
+          title: `Сумма по полю ${v.title}`,
+          isValue: true
+        });
+      });
     }
 
-    if (values.length) {
-      tableColumns.push({name: summaryKey, title: 'Общий итог'});
-    }
+    // if (values.length) {
+    //   tableColumns.push({name: summaryKey, title: 'Общий итог'});
+    // }
 
     if (rows.length) {
+      tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк'});
+      let bandedObj = {};
+      this.getBandedRowTree(0, bandedObj, tableRows, tableColumns);
+    } else if (tableColumns.length && values.length){
+      tableRows = [this.fillRow(null, null, null, 1, [], tableColumns)];
+    }
+
+    /*if (rows.length) {
       tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк'});
       // tableColumns = tableColumns.concat(rows.map(v => ({name: v.name, title: v.title})));
       // grouping = grouping.concat(rows.map(v => ({columnName: v.name})));
@@ -301,70 +432,24 @@ export class ExtendedTable extends React.PureComponent {
             ids.forEach((t, newIndex) => {
               rowObj = _.groupBy(t.children, v.name);
               Object.keys(rowObj).forEach((key, index) => {
-                // console.log(newIndex, key);
-                tableRows.push({[rowsTitleKey]: key, parentId: t.id, id: tableRows.length + 1, children: rowObj[key]});
+                tableRows.push(this.fillRow(key, v.name, t.id, tableRows.length + 1, rowObj[key], tableColumns));
               });
             });
           }
         } else {
           Object.keys(rowObj).forEach((key, index) => {
-            tableRows.push({[rowsTitleKey]: key, parentId: i || null, id: tableRows.length + 1, children: rowObj[key]});
+            tableRows.push(this.fillRow(key, v.name, i || null, tableRows.length + 1, rowObj[key], tableColumns));
           });
         }
         helpObj[i].endIndex = tableRows.length;
       });
-    }
+    } else if (tableColumns.length && values.length){
+      tableRows = [this.fillRow(null, null, null, 1, [], tableColumns)];
+    }*/
 
-    console.log(tableColumns, tableRows);
+    // tableRows = this.props.rows.map(v => ({...v, parentId: null}));
 
-    if (rows.length) {
-      return (
-        <Grid
-          rows={tableRows}
-          columns={tableColumns}
-          getRowId={getRowId}
-          rootComponent={this.tableRoot}
-        >
-
-          <TreeDataState
-            defaultExpandedRowIds={tableRows.length ? [tableRows[0].id] : []}
-          />
-          <CustomTreeData
-            getChildRows={this.getChildRows}
-          />
-          <VirtualTable
-            height="auto"
-            tableComponent={TableComponent}
-            messages={tableMessages}
-          />
-
-          <TableHeaderRow
-            cellComponent={HeaderCellComponentBase}
-          />
-
-          <TableTreeColumn
-            for={rowsTitleKey}
-          />
-
-          <TableBandHeader
-            columnBands={banded}
-          />
-        </Grid>
-      )
-    }
-
-    if (tableColumns.length && values.length){
-      let obj = {};
-      tableColumns.forEach(v => {
-        obj[v.name] = 1;
-      });
-      for (let key in obj) {
-
-      }
-      tableRows = [obj];
-    }
-
-    console.log(tableRows);
+    console.log(banded, tableColumns, tableRows);
 
     return (
       <Grid
@@ -373,17 +458,29 @@ export class ExtendedTable extends React.PureComponent {
         getRowId={getRowId}
         rootComponent={this.tableRoot}
       >
-        <VirtualTable
+
+        <TreeDataState
+          defaultExpandedRowIds={tableRows.length ? [tableRows[0].id] : []}
+        />
+        <CustomTreeData
+          getChildRows={this.getChildRows}
+        />
+        <Table
           height="auto"
           tableComponent={TableComponent}
           messages={tableMessages}
         />
 
         <TableHeaderRow
-          cellComponent={HeaderCellComponentBase}
+          cellComponent={HeaderCellComponent}
+        />
+
+        <TableTreeColumn
+          for={rowsTitleKey}
         />
 
         <TableBandHeader
+          cellComponent={BandCell}
           columnBands={banded}
         />
       </Grid>
