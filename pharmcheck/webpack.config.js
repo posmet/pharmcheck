@@ -6,16 +6,51 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 const { DefinePlugin } = webpack;
+const merge = require('webpack-merge');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
-  return {
+
+  const { mode } = env;
+
+  const envCfg = {
+    production: {
+      devtool: 'source-map',
+      optimization: {
+        minimizer: [
+          new TerserPlugin({
+            cache: true,
+            parallel: true,
+            sourceMap: true // set to true if you want JS source maps
+          }),
+          // new OptimizeCSSAssetsPlugin({})
+        ]
+      },
+      plugins: []
+    },
+    development: {
+      devtool: 'eval-sourcemap',
+      devServer: {
+        historyApiFallback: true,
+        contentBase: './dist',
+        hot: true
+      },
+      plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new HtmlWebpackHarddiskPlugin(),
+      ]
+    }
+  };
+
+  const main = {
     entry: './src/index.js',
     output: {
       path: __dirname + '/dist',
       publicPath: '/',
       filename: 'bundle.js'
     },
-    mode: env,
+    mode,
     module: {
       rules: [
         {
@@ -28,7 +63,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(sa|sc|c)ss$/,
           use: [
-            env !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
+            mode !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
             'css-loader',
             'sass-loader'
           ],
@@ -57,14 +92,12 @@ module.exports = (env, argv) => {
       },
     },
     plugins: [
-      new webpack.HotModuleReplacementPlugin(),
       new HtmlWebpackPlugin({
         alwaysWriteToDisk: true,
         template: `./src/index.html`,
         inject: 'body',
         filename: `index.html`
       }),
-      new HtmlWebpackHarddiskPlugin(),
       new CleanWebpackPlugin(['dist'], {
         verbose: true,
         dry: false
@@ -77,7 +110,7 @@ module.exports = (env, argv) => {
       }),
       new DefinePlugin({
         'process.env': {
-          NODE_ENV: env,
+          NODE_ENV: JSON.stringify(mode),
           MOCK: process.env.MOCK || false,
           HOST: process.env.HOST ? JSON.stringify(process.env.HOST) : JSON.stringify('')
         },
@@ -86,11 +119,8 @@ module.exports = (env, argv) => {
 
       })*/
       // new BundleAnalyzerPlugin()
-    ],
-    devServer: {
-      historyApiFallback: true,
-      contentBase: './dist',
-      hot: true
-    }
-  }
+    ]
+  };
+
+  return merge(main, envCfg[mode]);
 };
