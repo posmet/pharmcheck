@@ -6,7 +6,8 @@ const nconf = require('nconf');
 
 module.exports = function (app) {
 
-  app.post('/api/login', function(req, res, next) {
+	app.post('/api/login', function (req, res, next) {
+	console.log(req);
     passport.authenticate('local', function (err, user, info) {
       if (err) return messageService.sendMessage(res, err);
       if (!user) return messageService.sendMessage(res, "Неверный логин или пароль");
