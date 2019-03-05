@@ -46,7 +46,7 @@
     "react": "^16.8.2",
     "react-beautiful-dnd": "^9.0.2",
     "react-bootstrap": "^1.0.0-beta.5",
-    "react-contexify": "^3.0.3",
+    "react-contexify": "^4.0.2",
     "react-custom-scrollbars": "^4.2.1",
     "react-data-grid": "^6.0.1",
     "react-datepicker": "^1.7.0",

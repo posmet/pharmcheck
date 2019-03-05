@@ -28,7 +28,7 @@ import {
   TableTreeColumn,
 } from '@devexpress/dx-react-grid-material-ui';
 import { AutoSizer } from "react-virtualized";
-import "react-virtualized/styles.css";
+import { Menu, Item, contextMenu } from 'react-contexify';
 import classNames from 'classnames';
 
 const summaryKey = 'frontSummary';
@@ -85,21 +85,26 @@ const TableComponentBase = ({ classes, ...restProps }) => (
   />
 );
 
-const HeaderCellComponentBase = ({ classes, ...restProps }) => (
-  <TableHeaderRow.Cell
+const HeaderCellComponentBase = ({ classes, ...restProps }) => {
+  return (
+    <TableHeaderRow.Cell
     {...restProps}
     className="test"
-  />
-);
+    title={restProps.column.title}
+    />
+  );
+};
 
 const BandCellBase = ({children, tableRow, tableColumn, column, classes, ...restProps}) => {
+  const replaced = children.replace(new RegExp(`${separator}\\S+${separator}`), '');
   return (
     <TableBandHeader.Cell
       {...restProps}
       column={column}
+      title={replaced}
     >
-      <strong>
-        {children.replace(new RegExp(`${separator}\\S+${separator}`), '')}
+      <strong title={replaced}>
+        {replaced}
       </strong>
     </TableBandHeader.Cell>
   );
@@ -107,6 +112,17 @@ const BandCellBase = ({children, tableRow, tableColumn, column, classes, ...rest
 
 const tableMessages = {
   noData: '',
+};
+
+const valuesMap = {
+  sum: {
+    short: 'Σ',
+    full: 'Сумма(Σ)'
+  },
+  avg: {
+    short: 'avg',
+    full: 'Среднее(avg)'
+  }
 };
 
 class ExtendedDroppableColumn extends React.PureComponent {
@@ -130,8 +146,22 @@ class ExtendedDroppableColumn extends React.PureComponent {
       droppableId: 'values',
       isDropDisabled: false,
       title: 'Значения',
-      itemPrefix: 'Сумма по полю: '
+      itemPrefix: ' по полю: '
     }
+  };
+  onShowMenu = (item, index, e) => {
+    e.preventDefault();
+    if (this.props.name !== 'values') {
+      return false;
+    }
+    contextMenu.show({
+      id: this.props.name,
+      event: e,
+      props: {item, index}
+    });
+  };
+  onChangeMenu = (value, {props}) => {
+    this.props.onValueChange(value, props);
   };
   render() {
     const { name, items } = this.props;
@@ -154,7 +184,7 @@ class ExtendedDroppableColumn extends React.PureComponent {
                   index={index}>
                   {(provided, snapshot) => (
                     <React.Fragment>
-                      <div title={`${map.itemPrefix || ''}${item.title}`} className={`extended-table__header_column-item original ${item.selected ? 'active' : ''}`}
+                      <div onClick={this.onShowMenu.bind(this, item, index)} title={`${map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}${item.title}`} className={`extended-table__header_column-item original ${item.selected ? 'active' : ''}`}
                            ref={provided.innerRef}
                            {...provided.draggableProps}
                            {...provided.dragHandleProps}
@@ -164,16 +194,21 @@ class ExtendedDroppableColumn extends React.PureComponent {
                              snapshot
                            )}
                       >
-                        {map.itemPrefix || ''}{item.title}
+                        {map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}{item.title}
+                        {!map.isDropDisabled ? <span className="close" onClick={this.props.onDelete.bind(this, index)}>×</span> : null}
                       </div>
                       {snapshot.isDragging && map.isDropDisabled && (
-                        <div className="extended-table__header_column-item active clone">{map.itemPrefix || ''}{item.title}</div>
+                        <div className="extended-table__header_column-item active clone">{map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}{item.title}</div>
                       )}
                     </React.Fragment>
                   )}
                 </Draggable>
               ))}
             </div>
+            <Menu id={name}>
+              <Item onClick={this.onChangeMenu.bind(this, 'sum')}>Сумма(Σ)</Item>
+              <Item onClick={this.onChangeMenu.bind(this, 'avg')}>Среднее(avg)</Item>
+            </Menu>
             {provided.placeholder}
           </div>
         )}
@@ -235,6 +270,24 @@ export class ExtendedTable extends React.PureComponent {
 
   };
 
+  onDelete = (key, index, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [removed] = this.props.extended[key].splice(index, 1);
+    let item = this.props.columns.find(row => row.name === removed.name);
+    item.selected = false;
+    this.props.onChange(this.props.extended, this.props.columns);
+  };
+
+  onValueChange = (value, props) => {
+    const item = this.props.extended.values[props.index];
+    if (item.value === value) {
+      return false;
+    }
+    item.value = value;
+    this.props.onChange(this.props.extended);
+  };
+
   getBandedTree = (index, node, tableColumns) => {
     const { columns, values } = this.props.extended;
     if (columns.length < index + 1) {
@@ -244,60 +297,77 @@ export class ExtendedTable extends React.PureComponent {
       node.columnName = columns[index].name;
     }
     let parentColumnName = '';
-    if (!index) {
+    if (!index && !node.isLabel) {
       node.title = columns[index].title;
       node.isParent = true;
     } else {
       parentColumnName = `${node.columnName}${separator}`;
     }
     const isLast = columns.length < index + 2;
-    let groupedRows = _.groupBy(!index ? this.props.rows : node.rows, columns[index].name);
+    let filteredRows = this.props.rows;
+    if (node.grouping) {
+      node.grouping.forEach(group => {
+        filteredRows = filteredRows.filter(v => v[group.name] == group.value);
+      });
+    }
+    let groupedRows = _.groupBy(filteredRows, columns[index].name);
     node.children = [];
     _.keys(groupedRows).forEach((v, i) => {
-      const name = `${parentColumnName}${columns[index].name}${separator}${v}`;
+      let name = `${parentColumnName}${columns[index].name}${separator}${v}`;
       let obj = {
         columnName: name,
         titleClean: v,
         title: `${v}${!node.isParent ? `${separator}${node.title}${separator}` : ''}`,
         grouping: node.grouping ? node.grouping.concat([{name: columns[index].name, value: v}]) : [{name: columns[index].name, value: v}],
       };
-      // if (values.length > 1) {
-      //   node.children.push({title: v, isLabel: true, columnName: v, children: []});
-      //   console.log(v);
-      //   values.forEach(vv => {
-      //     node.children[i].children.push({columnName: `${name}${vv.name}`, name: `${name}${vv.name}`, title: `${v} - Сумма по полю ${vv.title}`});
-      //     if (isLast) {
-      //       tableColumns.push({...obj, name: `${name}${vv.name}`, nameClean: vv.name, title: `${v} - Сумма по полю ${vv.title}`});
-      //     }
-      //   });
-      // } else {
-        node.children.push({...obj, rows: groupedRows[v]});
-        if (isLast) {
-          tableColumns.push({...obj, name, nameClean: columns[index].name, title: v});
+      if (values.length > 1 && isLast) {
+        if (!node.isLabel) {
+          node.children.push({title: v, isLabel: true, columnName: name, grouping: obj.grouping, children: []});
+        } else if (v === node.title){
+          name = `${parentColumnName}${columns[index].name}`;
+          values.forEach(vv => {
+            node.children.push({
+              columnName: `${name}${vv.name}`,
+              grouping: obj.grouping,
+              name: `${name}${vv.name}`,
+              title: isLast ? `${v} - ${valuesMap[vv.value || 'sum'].short}: ${vv.title}` : v
+            });
+            tableColumns.push({
+              ...obj,
+              name: `${name}${vv.name}`,
+              nameClean: vv.name,
+              title: `${v} - ${valuesMap[vv.value || 'sum'].short}: ${vv.title}`,
+              valueProps: {name: vv.name, value: vv.value},
+              isValue: true
+            });
+          });
         }
-      // }
-    });
-    node.children.forEach(v => {
-      if (v.isLabel) {
-        v.children.forEach(c => {
-          this.getBandedTree(index + 1, c, tableColumns);
-        });
-      } else if (!v.isValue) {
-        this.getBandedTree(index + 1, v, tableColumns);
+      } else {
+        node.children.push({...obj});
+        if (isLast) {
+          tableColumns.push({...obj, name, nameClean: columns[index].name, title: v, valueProps: values.length ? {name: values[0].name, value: values[0].value} : undefined});
+        }
       }
     });
-    if (values.length > 0) {
+    node.children.forEach(v => {
+      if (!v.isValue) {
+        this.getBandedTree(!v.isLabel ? index + 1 : index, v, tableColumns);
+      }
+    });
+    if (values.length > 0 && !node.isLabel) {
       node.children = node.children.concat(values.map(v => ({
         isValue: true,
         columnName: `${parentColumnName}${v.name}`,
-        title: `${node.titleClean || node.title} - Сумма по полю ${v.title}`
+        title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+        grouping: node.grouping,
       })));
       values.forEach(v => {
         tableColumns.push({
           name: `${parentColumnName}${v.name}`,
-          title: `${node.titleClean || node.title} - Сумма по полю ${v.title}`,
+          title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+          valueProps: {name: v.name, value: v.value},
           isValue: true,
-          // rows: node.children.filter(c => !v.isValue).reduce((sum, v) => sum.concat(v.rows || []), [])
+          grouping: node.grouping,
         });
       });
     }
@@ -339,8 +409,7 @@ export class ExtendedTable extends React.PureComponent {
     return array.map(v => toJS(v));
   };
 
-  getRowAggregateValue = (rowName, rowValue, rowGrouping, columnName, columnValue, columnGrouping, valueName) => {
-    console.log(rowName, columnName, valueName);
+  getRowAggregateValue = (rowName, rowValue, rowGrouping, columnName, columnValue, columnGrouping, valueProps) => {
     rowGrouping = rowGrouping || [];
     columnGrouping = columnGrouping || [];
     let result = this.props.rows;
@@ -350,22 +419,24 @@ export class ExtendedTable extends React.PureComponent {
     rowGrouping.forEach(group => {
       result = result.filter(v => v[group.name] == group.value);
     });
-    console.log(rowName, rowValue, rowGrouping, columnName, columnValue, columnGrouping, result);
-    return result.reduce((sum, v) => {
-      let floatValue = parseFloat(v[valueName]);
-      return isNaN(floatValue) ? sum : sum + floatValue;
+    let totally = result.reduce((sum, v) => {
+      let floatValue = parseFloat(v[valueProps.name]);
+      return isNaN(v[valueProps.name]) || isNaN(floatValue) ? sum : sum + floatValue;
     }, 0);
+    switch (valueProps.value) {
+      case 'avg':
+        totally = result.length ? totally/result.length : totally;
+        break;
+    }
+    return totally;
   };
 
   fillRow = (rowValue, rowName, parentId, id, rowGrouping, tableColumns) => {
     let obj = {[rowsTitleKey]: rowValue, parentId, id, grouping: rowGrouping};
     tableColumns.forEach(column => {
-      if (column.name !== rowsTitleKey) {
-        this.props.extended.values.forEach(v => {
-          let value = this.getRowAggregateValue(rowName, rowValue, rowGrouping, column.titleClean, column.nameClean, column.grouping, v.name);
-          console.log(value, column.name);
-          obj[column.name] = value;
-        });
+      if (column.name !== rowsTitleKey && column.valueProps) {
+        let value = this.getRowAggregateValue(rowName, rowValue, rowGrouping, column.titleClean, column.nameClean, column.grouping, column.valueProps);
+        obj[column.name] = value;
       }
     });
     return obj;
@@ -385,7 +456,6 @@ export class ExtendedTable extends React.PureComponent {
     let banded = [];
     let tableColumns = [];
     let tableRows = [];
-    let grouping = [];
     if (columns.length) {
       let bandedObj = {};
       this.getBandedTree(0, bandedObj, tableColumns);
@@ -395,15 +465,12 @@ export class ExtendedTable extends React.PureComponent {
       values.forEach(v => {
         tableColumns.push({
           name: `${v.name}`,
-          title: `Сумма по полю ${v.title}`,
-          isValue: true
+          title: `${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+          isValue: true,
+          valueProps: {name: v.name, value: v.value},
         });
       });
     }
-
-    // if (values.length) {
-    //   tableColumns.push({name: summaryKey, title: 'Общий итог'});
-    // }
 
     if (rows.length) {
       tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк'});
@@ -412,42 +479,6 @@ export class ExtendedTable extends React.PureComponent {
     } else if (tableColumns.length && values.length){
       tableRows = [this.fillRow(null, null, null, 1, [], tableColumns)];
     }
-
-    /*if (rows.length) {
-      tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк'});
-      // tableColumns = tableColumns.concat(rows.map(v => ({name: v.name, title: v.title})));
-      // grouping = grouping.concat(rows.map(v => ({columnName: v.name})));
-      let rowObj = {};
-      let helpObj = {};
-      rows.forEach((v, i) => {
-        helpObj[i] = {
-          startIndex: !tableRows.length ? 0 : tableRows.length,
-          endIndex: 0,
-          name: v.name
-        };
-        rowObj = _.groupBy(this.props.rows, v.name);
-        if (helpObj[i - 1]) {
-          let ids = tableRows.slice(helpObj[i - 1].startIndex, helpObj[i - 1].endIndex);
-          if (ids && ids.length) {
-            ids.forEach((t, newIndex) => {
-              rowObj = _.groupBy(t.children, v.name);
-              Object.keys(rowObj).forEach((key, index) => {
-                tableRows.push(this.fillRow(key, v.name, t.id, tableRows.length + 1, rowObj[key], tableColumns));
-              });
-            });
-          }
-        } else {
-          Object.keys(rowObj).forEach((key, index) => {
-            tableRows.push(this.fillRow(key, v.name, i || null, tableRows.length + 1, rowObj[key], tableColumns));
-          });
-        }
-        helpObj[i].endIndex = tableRows.length;
-      });
-    } else if (tableColumns.length && values.length){
-      tableRows = [this.fillRow(null, null, null, 1, [], tableColumns)];
-    }*/
-
-    // tableRows = this.props.rows.map(v => ({...v, parentId: null}));
 
     console.log(banded, tableColumns, tableRows);
 
@@ -496,9 +527,9 @@ export class ExtendedTable extends React.PureComponent {
           <div className="extended-table__header">
             <DragDropContext onDragEnd={this.onDragEnd}>
               <ExtendedDroppableColumn name="fields" items={this.props.columns} />
-              <ExtendedDroppableColumn name="columns" items={columns} />
-              <ExtendedDroppableColumn name="rows" items={rows} />
-              <ExtendedDroppableColumn name="values" items={values} />
+              <ExtendedDroppableColumn name="columns" items={columns} onDelete={this.onDelete.bind(this, 'columns')} />
+              <ExtendedDroppableColumn name="rows" items={rows} onDelete={this.onDelete.bind(this, 'rows')} />
+              <ExtendedDroppableColumn name="values" items={values} onDelete={this.onDelete.bind(this, 'values')} onValueChange={this.onValueChange} />
             </DragDropContext>
           </div>
         </ErrorBoundary>

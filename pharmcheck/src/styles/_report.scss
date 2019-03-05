@@ -154,6 +154,8 @@
         white-space: nowrap;
         overflow: hidden;
         text-align: center;
+        position: relative;
+        padding-right: 20px;
         &.active {
           border: 1px solid #1c84c6;
           background: #1c84c6;
@@ -161,6 +163,15 @@
         }
         &.clone + div {
           display: none !important;
+        }
+        .close {
+          float: none;
+          position: absolute;
+          right: 5px;
+          top: -3px;
+          font-size: 1.1rem;
+          line-height: inherit;
+          cursor: pointer;
         }
       }
     }

@@ -1,4 +1,6 @@
-@import '../../node_modules/bootstrap/scss/bootstrap';
+@import '~bootstrap/scss/bootstrap';
+@import '~react-virtualized/styles.css';
+@import '~react-contexify/dist/ReactContexify.min.css';
 
 $input-placeholder-color: #ced4da;
 $logo-url: "../../pharm_check-win/static/logo_pharmacheck_dark_small_v3.png";
