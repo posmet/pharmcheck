@@ -115,6 +115,18 @@ const tableMessages = {
 };
 
 const valuesMap = {
+  count: {
+    short: 'count',
+    full: 'Кол-во(count)'
+  },
+  min: {
+    short: 'min',
+    full: 'Минимальное значение(min)'
+  },
+  max: {
+    short: 'max',
+    full: 'Максимальное значение(max)'
+  },
   sum: {
     short: 'Σ',
     full: 'Сумма(Σ)'
@@ -184,7 +196,7 @@ class ExtendedDroppableColumn extends React.PureComponent {
                   index={index}>
                   {(provided, snapshot) => (
                     <React.Fragment>
-                      <div onClick={this.onShowMenu.bind(this, item, index)} title={`${map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}${item.title}`} className={`extended-table__header_column-item original ${item.selected ? 'active' : ''}`}
+                      <div onClick={this.onShowMenu.bind(this, item, index)} title={`${map.itemPrefix ? `${valuesMap[item.value || 'count'].full}${map.itemPrefix}` : ''}${item.title}`} className={`extended-table__header_column-item original ${item.selected ? 'active' : ''}`}
                            ref={provided.innerRef}
                            {...provided.draggableProps}
                            {...provided.dragHandleProps}
@@ -194,11 +206,11 @@ class ExtendedDroppableColumn extends React.PureComponent {
                              snapshot
                            )}
                       >
-                        {map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}{item.title}
+                        {map.itemPrefix ? `${valuesMap[item.value || 'count'].full}${map.itemPrefix}` : ''}{item.title}
                         {!map.isDropDisabled ? <span className="close" onClick={this.props.onDelete.bind(this, index)}>×</span> : null}
                       </div>
                       {snapshot.isDragging && map.isDropDisabled && (
-                        <div className="extended-table__header_column-item active clone">{map.itemPrefix ? `${valuesMap[item.value || 'sum'].full}${map.itemPrefix}` : ''}{item.title}</div>
+                        <div className="extended-table__header_column-item active clone">{map.itemPrefix ? `${valuesMap[item.value || 'count'].full}${map.itemPrefix}` : ''}{item.title}</div>
                       )}
                     </React.Fragment>
                   )}
@@ -206,8 +218,7 @@ class ExtendedDroppableColumn extends React.PureComponent {
               ))}
             </div>
             <Menu id={name}>
-              <Item onClick={this.onChangeMenu.bind(this, 'sum')}>Сумма(Σ)</Item>
-              <Item onClick={this.onChangeMenu.bind(this, 'avg')}>Среднее(avg)</Item>
+              {Object.keys(valuesMap).map(key => <Item key={key} onClick={this.onChangeMenu.bind(this, key)}>{valuesMap[key].full}</Item>)}
             </Menu>
             {provided.placeholder}
           </div>
@@ -220,6 +231,13 @@ class ExtendedDroppableColumn extends React.PureComponent {
 const TableComponent = withStyles(styles, { name: 'TableComponent' })(TableComponentBase);
 const HeaderCellComponent = withStyles(styles, { name: 'HeaderCellComponent' })(HeaderCellComponentBase);
 const BandCell = withStyles(cellStyles, { name: 'BandCell' })(BandCellBase);
+
+const getSum = (array, key) => {
+  return array.reduce((sum, v) => {
+    let floatValue = parseFloat(v[key]);
+    return isNaN(v[key]) || isNaN(floatValue) ? sum : sum + floatValue;
+  }, 0);
+};
 
 export class ExtendedTable extends React.PureComponent {
 
@@ -330,13 +348,13 @@ export class ExtendedTable extends React.PureComponent {
               columnName: `${name}${vv.name}`,
               grouping: obj.grouping,
               name: `${name}${vv.name}`,
-              title: isLast ? `${v} - ${valuesMap[vv.value || 'sum'].short}: ${vv.title}` : v
+              title: isLast ? `${v} - ${valuesMap[vv.value || 'count'].short}: ${vv.title}` : v
             });
             tableColumns.push({
               ...obj,
               name: `${name}${vv.name}`,
               nameClean: vv.name,
-              title: `${v} - ${valuesMap[vv.value || 'sum'].short}: ${vv.title}`,
+              title: `${v} - ${valuesMap[vv.value || 'count'].short}: ${vv.title}`,
               valueProps: {name: vv.name, value: vv.value},
               isValue: true
             });
@@ -358,13 +376,13 @@ export class ExtendedTable extends React.PureComponent {
       node.children = node.children.concat(values.map(v => ({
         isValue: true,
         columnName: `${parentColumnName}${v.name}`,
-        title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+        title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'count'].short}: ${v.title}`,
         grouping: node.grouping,
       })));
       values.forEach(v => {
         tableColumns.push({
           name: `${parentColumnName}${v.name}`,
-          title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+          title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'count'].short}: ${v.title}`,
           valueProps: {name: v.name, value: v.value},
           isValue: true,
           grouping: node.grouping,
@@ -419,14 +437,35 @@ export class ExtendedTable extends React.PureComponent {
     rowGrouping.forEach(group => {
       result = result.filter(v => v[group.name] == group.value);
     });
-    let totally = result.reduce((sum, v) => {
-      let floatValue = parseFloat(v[valueProps.name]);
-      return isNaN(v[valueProps.name]) || isNaN(floatValue) ? sum : sum + floatValue;
-    }, 0);
+    let totally = result.length;
     switch (valueProps.value) {
-      case 'avg':
-        totally = result.length ? totally/result.length : totally;
+      case 'count':
+        totally = result.length;
         break;
+      case 'sum':
+        totally = getSum(result, valueProps.name);
+        break;
+      case 'avg':
+        totally = result.length ? getSum(result, valueProps.name)/result.length : totally;
+        break;
+      case 'min':
+        let min = 0;
+        if (result.length) {
+          let floatValue = parseFloat(result[0][valueProps.name]);
+          min = isNaN(result[0][valueProps.name]) || isNaN(floatValue) ? 0 : floatValue;
+        }
+        totally = result.reduce((sum, v) => {
+          let floatValue = parseFloat(v[valueProps.name]);
+          return floatValue < sum ? floatValue : sum;
+        }, min);
+        break;
+      case 'max':
+        totally = result.reduce((sum, v) => {
+          let floatValue = parseFloat(v[valueProps.name]);
+          return floatValue > sum ? floatValue : sum;
+        }, 0);
+        break;
+
     }
     return totally;
   };
@@ -465,7 +504,7 @@ export class ExtendedTable extends React.PureComponent {
       values.forEach(v => {
         tableColumns.push({
           name: `${v.name}`,
-          title: `${valuesMap[v.value || 'sum'].short}: ${v.title}`,
+          title: `${valuesMap[v.value || 'count'].short}: ${v.title}`,
           isValue: true,
           valueProps: {name: v.name, value: v.value},
         });
