@@ -443,10 +443,10 @@ export class ExtendedTable extends React.PureComponent {
         totally = result.length;
         break;
       case 'sum':
-        totally = getSum(result, valueProps.name);
+        totally = (getSum(result, valueProps.name)).toFixed(2);
         break;
       case 'avg':
-        totally = result.length ? getSum(result, valueProps.name)/result.length : totally;
+        totally = result.length ? (getSum(result, valueProps.name)/result.length).toFixed(2) : totally;
         break;
       case 'min':
         let min = 0;
