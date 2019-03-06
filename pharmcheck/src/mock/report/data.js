@@ -72,6 +72,7 @@ export const addReport = function (id, data) {
     id,
     name: report ? report.name : ''
   };
+  data.reptp = id;
   data.created = new Date();
   data.status = {
     id: 1,
@@ -98,6 +99,7 @@ export const addRequest = function (id, data) {
     id,
     name: report ? report.name : ''
   };
+  data.reptp = id;
   data.created = new Date();
   requests.push(data);
   localStorage.setItem('requests', JSON.stringify(requests));

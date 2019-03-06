@@ -4,7 +4,10 @@ import _ from 'lodash';
 import uuid from 'uuid/v4';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ErrorBoundary from '@components/common/ErrorBoundary';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { withStyles } from '@material-ui/core/styles';
+import {Collapse, Button} from 'react-bootstrap';
 import {
   GroupingState,
   IntegratedGrouping,
@@ -242,7 +245,8 @@ const getSum = (array, key) => {
 export class ExtendedTable extends React.PureComponent {
 
   state = {
-    expandedRowIds: []
+    expandedRowIds: [],
+    showSettings: false
   };
 
   onDragEnd = result => {
@@ -485,6 +489,10 @@ export class ExtendedTable extends React.PureComponent {
     this.setState({ expandedRowIds });
   };
 
+  toggleSettings = () => {
+    this.setState({showSettings: !this.state.showSettings});
+  };
+
   tableRoot = (props) => <Grid.Root {...props} className="material-table-bordered" style={{ height: "100%", maxHeight: this.props.rows.length ? 550 : 400 }}/>;
 
   get table() {
@@ -495,6 +503,7 @@ export class ExtendedTable extends React.PureComponent {
     let banded = [];
     let tableColumns = [];
     let tableRows = [];
+
     if (columns.length) {
       let bandedObj = {};
       this.getBandedTree(0, bandedObj, tableColumns);
@@ -562,16 +571,23 @@ export class ExtendedTable extends React.PureComponent {
 
     return (
       <div className="extended-table">
-        <ErrorBoundary>
-          <div className="extended-table__header">
-            <DragDropContext onDragEnd={this.onDragEnd}>
-              <ExtendedDroppableColumn name="fields" items={this.props.columns} />
-              <ExtendedDroppableColumn name="columns" items={columns} onDelete={this.onDelete.bind(this, 'columns')} />
-              <ExtendedDroppableColumn name="rows" items={rows} onDelete={this.onDelete.bind(this, 'rows')} />
-              <ExtendedDroppableColumn name="values" items={values} onDelete={this.onDelete.bind(this, 'values')} onValueChange={this.onValueChange} />
-            </DragDropContext>
+        <Button variant="link" onClick={this.toggleSettings}>
+          <FontAwesomeIcon icon={faAngleRight} /> Настройки таблицы
+        </Button>
+        <Collapse in={this.state.showSettings}>
+          <div>
+            <ErrorBoundary>
+              <div className="extended-table__header">
+                <DragDropContext onDragEnd={this.onDragEnd}>
+                  <ExtendedDroppableColumn name="fields" items={this.props.columns} />
+                  <ExtendedDroppableColumn name="columns" items={columns} onDelete={this.onDelete.bind(this, 'columns')} />
+                  <ExtendedDroppableColumn name="rows" items={rows} onDelete={this.onDelete.bind(this, 'rows')} />
+                  <ExtendedDroppableColumn name="values" items={values} onDelete={this.onDelete.bind(this, 'values')} onValueChange={this.onValueChange} />
+                </DragDropContext>
+              </div>
+            </ErrorBoundary>
           </div>
-        </ErrorBoundary>
+        </Collapse>
         <ErrorBoundary>
           <div className="extended-table__body">
             {this.table}

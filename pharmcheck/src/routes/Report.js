@@ -58,14 +58,14 @@ class Report extends Component {
   onSubmitRequest = (v) => {
     const { props, toggleModal } = this;
     const { selected, saved, saveRequest } = props.ReportStore;
-    saveRequest({...v, filter: saved.filter, fields: !saved.fields.length ? selected.fields : saved.fields});
+    saveRequest({...v, filter: saved.filter, fields: !saved.fields.length ? selected.fields : saved.fields, extended: saved.extended});
     toggleModal('requestModal', null);
   };
 
   onSubmitReport = (v) => {
     const { props, toggleModal } = this;
     const { selected, saved, saveReport } = props.ReportStore;
-    saveReport({...v, filter: saved.filter, fields: !saved.fields.length ? selected.fields : saved.fields});
+    saveReport({...v, filter: saved.filter, fields: !saved.fields.length ? selected.fields : saved.fields, extended: saved.extended});
     toggleModal('saveModal', null);
   };
 

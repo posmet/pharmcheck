@@ -152,6 +152,10 @@ class ReportStore extends AbstractStore {
         return RoutingStore.push(`/reports/${this.routeId}`);
       }
       this.extendColumn(body);
+      body.extended = body.extended || {};
+      body.extended.rows = body.extended.rows || [];
+      body.extended.columns = body.extended.columns || [];
+      body.extended.values = body.extended.values || [];
       this.saved = body;
     } catch(e) {
       errorHandler.call(this, {showToast: true}, e);
