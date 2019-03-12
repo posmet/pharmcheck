@@ -13,7 +13,7 @@ class ReportStore extends AbstractStore {
   @observable data = [];
   // @observable data = [
   //   {id: 0, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
-  //   {id: 1, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 40, Sm: 200, QtyPos: 2, frontId: uuid()},
+  //   {id: 1, Group_Name: 1, Ph_Name: "Аптека1", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 2, Price: 40, Sm: 200, QtyPos: 2, frontId: uuid()},
   //   {id: 2, Group_Name: 1, Ph_Name: "Аптека2", dat: "131313", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
   //   {id: 3, Group_Name: 1, Ph_Name: "Аптека2", dat: "121212", G_name: "Сеть", Barcode: 123, Qty: 1, Price: 20, Sm: 200, QtyPos: 2, frontId: uuid()},
   // ];
@@ -45,7 +45,7 @@ class ReportStore extends AbstractStore {
 
   changeReport = (routeId) => {
     this.routeId = routeId;
-    // this.data = [];
+    this.data = [];
     this.dataRequestTime = 0;
     this.saved = this.defaultSaved();
   };
@@ -156,6 +156,7 @@ class ReportStore extends AbstractStore {
       body.extended.rows = body.extended.rows || [];
       body.extended.columns = body.extended.columns || [];
       body.extended.values = body.extended.values || [];
+      body.extended.actions = body.extended.actions || [];
       this.saved = body;
     } catch(e) {
       errorHandler.call(this, {showToast: true}, e);
