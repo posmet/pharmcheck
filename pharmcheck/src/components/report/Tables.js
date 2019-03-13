@@ -4,12 +4,20 @@ import _ from 'lodash';
 import uuid from 'uuid/v4';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ErrorBoundary from '@components/common/ErrorBoundary';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { withStyles } from '@material-ui/core/styles';
+import {Collapse, Button} from 'react-bootstrap';
 import {
   GroupingState,
   IntegratedGrouping,
   TreeDataState,
   CustomTreeData,
+  FilteringState,
+  SortingState,
+  IntegratedFiltering,
+  IntegratedSorting,
+  DataTypeProvider
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -26,6 +34,7 @@ import {
   ColumnChooser,
   TableColumnVisibility,
   TableTreeColumn,
+  TableFilterRow
 } from '@devexpress/dx-react-grid-material-ui';
 import { AutoSizer } from "react-virtualized";
 import { Menu, Item, contextMenu } from 'react-contexify';
@@ -34,6 +43,12 @@ import classNames from 'classnames';
 const summaryKey = 'frontSummary';
 const rowsTitleKey = 'frontRowsTitle';
 const separator = '#_#';
+const bandedColumnWidth = 130;
+
+const FilterIcon = ({ type, ...restProps }) => {
+  // if (type === 'month') return <DateRange {...restProps} />;
+  return <TableFilterRow.Icon type={type} {...restProps} />;
+};
 
 const getFieldItemStyle = (isDragging, draggableStyle, snapshot) => {
   if (!snapshot.isDropAnimating) {
@@ -112,6 +127,31 @@ const BandCellBase = ({children, tableRow, tableColumn, column, classes, ...rest
 
 const tableMessages = {
   noData: '',
+};
+
+const filterAllFields = {
+  contains: 'Содержит',
+  notContains: 'Не содержит',
+  equal: 'Равно',
+  notEqual: 'Не равно'
+};
+
+const filterNumberFields = {
+  ...filterAllFields,
+  greaterThan: 'Больше',
+  greaterThanOrEqual: 'Больше или равно',
+  lessThan: 'Меньше',
+  lessThanOrEqual: 'Меньше или равно',
+};
+
+const filterMessages = {
+  ...filterAllFields,
+  ...filterNumberFields,
+  filterPlaceholder: 'Фильтр'
+};
+
+const headerMessages = {
+  sortingHint: 'Сортировать. Для отмены сортировки зажмите клавишу ctrl'
 };
 
 const valuesMap = {
@@ -242,7 +282,8 @@ const getSum = (array, key) => {
 export class ExtendedTable extends React.PureComponent {
 
   state = {
-    expandedRowIds: []
+    expandedRowIds: [],
+    showSettings: false
   };
 
   onDragEnd = result => {
@@ -270,6 +311,7 @@ export class ExtendedTable extends React.PureComponent {
       clone.selected = false;
       item.selected = true;
       const array = this.props.extended[destination.droppableId];
+      this.props.extended.actions = [];
       array.splice(destination.index, 0, clone);
       onChange(this.props.extended, this.props.columns);
     } else {
@@ -277,12 +319,14 @@ export class ExtendedTable extends React.PureComponent {
         const [removed] = this.props.extended[source.droppableId].splice(result.source.index, 1);
         let item = this.props.columns.find(row => row.name === removed.name);
         item.selected = false;
+        this.props.extended.actions = [];
         onChange(this.props.extended, this.props.columns);
         return false;
       }
       //перемещаем/меняем позицию
       const [removed] = this.props.extended[source.droppableId].splice(result.source.index, 1);
       this.props.extended[destination.droppableId].splice(destination.index, 0, removed);
+      this.props.extended.actions = [];
       onChange(this.props.extended);
     }
 
@@ -304,6 +348,12 @@ export class ExtendedTable extends React.PureComponent {
     }
     item.value = value;
     this.props.onChange(this.props.extended);
+  };
+
+  getSavedWidth = (name, width) => {
+    const actionsFiltered = this.props.extended.actions.filter(v => v.columnName === name && v.width);
+    const defaultWidth = width || bandedColumnWidth;
+    return actionsFiltered.length ? actionsFiltered[0].width : defaultWidth;
   };
 
   getBandedTree = (index, node, tableColumns) => {
@@ -352,6 +402,7 @@ export class ExtendedTable extends React.PureComponent {
             });
             tableColumns.push({
               ...obj,
+              width: this.getSavedWidth(`${name}${vv.name}`),
               name: `${name}${vv.name}`,
               nameClean: vv.name,
               title: `${v} - ${valuesMap[vv.value || 'count'].short}: ${vv.title}`,
@@ -363,10 +414,18 @@ export class ExtendedTable extends React.PureComponent {
       } else {
         node.children.push({...obj});
         if (isLast) {
-          tableColumns.push({...obj, name, nameClean: columns[index].name, title: v, valueProps: values.length ? {name: values[0].name, value: values[0].value} : undefined});
+          tableColumns.push({
+            ...obj,
+            width: this.getSavedWidth(name),
+            name,
+            nameClean: columns[index].name,
+            title: v,
+            valueProps: values.length ? {name: values[0].name, value: values[0].value} : undefined
+          });
         }
       }
     });
+    node.width = node.children.length * 100 || 100;
     node.children.forEach(v => {
       if (!v.isValue) {
         this.getBandedTree(!v.isLabel ? index + 1 : index, v, tableColumns);
@@ -380,8 +439,10 @@ export class ExtendedTable extends React.PureComponent {
         grouping: node.grouping,
       })));
       values.forEach(v => {
+        const name = `${parentColumnName}${v.name}`;
         tableColumns.push({
-          name: `${parentColumnName}${v.name}`,
+          width: this.getSavedWidth(name),
+          name,
           title: `${node.titleClean || node.title} - ${valuesMap[v.value || 'count'].short}: ${v.title}`,
           valueProps: {name: v.name, value: v.value},
           isValue: true,
@@ -485,16 +546,93 @@ export class ExtendedTable extends React.PureComponent {
     this.setState({ expandedRowIds });
   };
 
+  onFilterChange = (filtered) => {
+    const obj = _.keyBy(filtered, 'columnName');
+    if (!this.props.extended.actions.length) {
+      this.props.extended.actions = this.props.extended.actions.concat(filtered);
+    } else {
+      this.props.extended.actions = this.props.extended.actions.filter(v => {
+        if (obj[v.columnName]) {
+          _.merge(v, obj[v.columnName]);
+          obj[v.columnName].used = true;
+        }
+        if (v.direction || v.width) {
+          return true;
+        }
+        return Object.keys(obj).indexOf(v.columnName) > -1;
+      });
+      Object.keys(obj).forEach(v => {
+        if (!obj[v].used) {
+          this.props.extended.actions.push(obj[v]);
+        }
+      });
+    }
+    this.props.onChange(this.props.extended);
+  };
+  onSortingChange = (sorted) => {
+    const obj = _.keyBy(sorted, 'columnName');
+    if (!this.props.extended.actions.length) {
+      this.props.extended.actions = this.props.extended.actions.concat(sorted);
+    } else {
+      this.props.extended.actions = this.props.extended.actions.filter(v => {
+        if (obj[v.columnName]) {
+          _.merge(v, obj[v.columnName]);
+          obj[v.columnName].used = true;
+        }
+        if (v.value || v.width) {
+          return true;
+        }
+        return Object.keys(obj).indexOf(v.columnName) > -1;
+      });
+      Object.keys(obj).forEach(v => {
+        if (!obj[v].used) {
+          this.props.extended.actions.push(obj[v]);
+        }
+      });
+    }
+    this.props.onChange(this.props.extended);
+  };
+
+  onResising = (changed) => {
+    const filtered = changed.filter(v => v.width !== bandedColumnWidth);
+    const obj = _.keyBy(filtered, 'columnName');
+    if (!this.props.extended.actions.length) {
+      this.props.extended.actions = this.props.extended.actions.concat(filtered);
+    } else {
+      this.props.extended.actions = this.props.extended.actions.filter(v => {
+        if (obj[v.columnName]) {
+          _.merge(v, obj[v.columnName]);
+          obj[v.columnName].used = true;
+        }
+        if (v.value || v.direction) {
+          return true;
+        }
+        return Object.keys(obj).indexOf(v.columnName) > -1;
+      });
+      Object.keys(obj).forEach(v => {
+        if (!obj[v].used) {
+          this.props.extended.actions.push(obj[v]);
+        }
+      });
+    }
+    this.props.onChange(this.props.extended);
+  };
+
+  toggleSettings = () => {
+    this.setState({showSettings: !this.state.showSettings});
+  };
+
   tableRoot = (props) => <Grid.Root {...props} className="material-table-bordered" style={{ height: "100%", maxHeight: this.props.rows.length ? 550 : 400 }}/>;
 
   get table() {
-    const { columns, rows, values } = this.props.extended;
+    const { columns, rows, values, actions } = this.props.extended;
     if (!rows.length && !columns.length && !values.length) {
       return null;
     }
     let banded = [];
     let tableColumns = [];
     let tableRows = [];
+
     if (columns.length) {
       let bandedObj = {};
       this.getBandedTree(0, bandedObj, tableColumns);
@@ -503,57 +641,94 @@ export class ExtendedTable extends React.PureComponent {
     } else if (values.length) {
       values.forEach(v => {
         tableColumns.push({
+          width: this.getSavedWidth(v.name),
           name: `${v.name}`,
           title: `${valuesMap[v.value || 'count'].short}: ${v.title}`,
           isValue: true,
-          valueProps: {name: v.name, value: v.value},
+          valueProps: {name: v.name, value: v.value}
         });
       });
     }
 
     if (rows.length) {
-      tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк'});
+      tableColumns.unshift({name: rowsTitleKey, title: 'Названия строк', type: 'string', width: this.getSavedWidth(rowsTitleKey, 230)});
       let bandedObj = {};
       this.getBandedRowTree(0, bandedObj, tableRows, tableColumns);
     } else if (tableColumns.length && values.length){
       tableRows = [this.fillRow(null, null, null, 1, [], tableColumns)];
     }
 
-    console.log(banded, tableColumns, tableRows);
-
     return (
-      <Grid
-        rows={tableRows}
-        columns={tableColumns}
-        getRowId={getRowId}
-        rootComponent={this.tableRoot}
-      >
+      <AutoSizer disableHeight>
+        {({ height, width }) => {
+          return (
+            <div style={{height, width}}>
+              <Grid
+                rows={tableRows}
+                columns={tableColumns}
+                getRowId={getRowId}
+                rootComponent={this.tableRoot}
+              >
+                <DataTypeProvider
+                  for={tableColumns.filter(v => v.type !== 'string').map(v => v.name)}
+                  availableFilterOperations={Object.keys(filterNumberFields)}
+                />
+                <DataTypeProvider
+                  for={tableColumns.filter(v => v.type === 'string').map(v => v.name)}
+                  availableFilterOperations={Object.keys(filterAllFields)}
+                />
+                <SortingState
+                  sorting={actions.filter(v => v.direction)}
+                  onSortingChange={this.onSortingChange}
+                />
+                <FilteringState
+                  filters={actions.filter(v => v.value)}
+                  onFiltersChange={this.onFilterChange}
+                />
+                <TreeDataState
+                  defaultExpandedRowIds={tableRows.length ? [tableRows[0].id] : []}
+                />
+                <CustomTreeData
+                  getChildRows={this.getChildRows}
+                />
+                <IntegratedSorting />
+                <IntegratedFiltering/>
+                <Table
+                  height="auto"
+                  tableComponent={TableComponent}
+                  messages={tableMessages}
+                />
 
-        <TreeDataState
-          defaultExpandedRowIds={tableRows.length ? [tableRows[0].id] : []}
-        />
-        <CustomTreeData
-          getChildRows={this.getChildRows}
-        />
-        <Table
-          height="auto"
-          tableComponent={TableComponent}
-          messages={tableMessages}
-        />
+                <TableColumnResizing
+                  columnWidths={tableColumns.map(v => ({columnName: v.columnName || v.name, width: v.width || bandedColumnWidth}))}
+                  onColumnWidthsChange={this.onResising}
+                />
 
-        <TableHeaderRow
-          cellComponent={HeaderCellComponent}
-        />
+                <TableHeaderRow
+                  showSortingControls
+                  messages={headerMessages}
+                  cellComponent={HeaderCellComponent}
+                />
 
-        <TableTreeColumn
-          for={rowsTitleKey}
-        />
+                <TableTreeColumn
+                  for={rowsTitleKey}
+                />
 
-        <TableBandHeader
-          cellComponent={BandCell}
-          columnBands={banded}
-        />
-      </Grid>
+                <TableBandHeader
+                  cellComponent={BandCell}
+                  columnBands={banded}
+                />
+
+                <TableFilterRow
+                  showFilterSelector
+                  iconComponent={FilterIcon}
+                  messages={filterMessages}
+                />
+              </Grid>
+            </div>
+          )
+        }}
+      </AutoSizer>
     )
   }
 
@@ -562,16 +737,23 @@ export class ExtendedTable extends React.PureComponent {
 
     return (
       <div className="extended-table">
-        <ErrorBoundary>
-          <div className="extended-table__header">
-            <DragDropContext onDragEnd={this.onDragEnd}>
-              <ExtendedDroppableColumn name="fields" items={this.props.columns} />
-              <ExtendedDroppableColumn name="columns" items={columns} onDelete={this.onDelete.bind(this, 'columns')} />
-              <ExtendedDroppableColumn name="rows" items={rows} onDelete={this.onDelete.bind(this, 'rows')} />
-              <ExtendedDroppableColumn name="values" items={values} onDelete={this.onDelete.bind(this, 'values')} onValueChange={this.onValueChange} />
-            </DragDropContext>
+        <Button variant="link" onClick={this.toggleSettings}>
+          <FontAwesomeIcon icon={faAngleRight} /> Настройки таблицы
+        </Button>
+        <Collapse in={this.state.showSettings}>
+          <div>
+            <ErrorBoundary>
+              <div className="extended-table__header">
+                <DragDropContext onDragEnd={this.onDragEnd}>
+                  <ExtendedDroppableColumn name="fields" items={this.props.columns} />
+                  <ExtendedDroppableColumn name="columns" items={columns} onDelete={this.onDelete.bind(this, 'columns')} />
+                  <ExtendedDroppableColumn name="rows" items={rows} onDelete={this.onDelete.bind(this, 'rows')} />
+                  <ExtendedDroppableColumn name="values" items={values} onDelete={this.onDelete.bind(this, 'values')} onValueChange={this.onValueChange} />
+                </DragDropContext>
+              </div>
+            </ErrorBoundary>
           </div>
-        </ErrorBoundary>
+        </Collapse>
         <ErrorBoundary>
           <div className="extended-table__body">
             {this.table}
@@ -606,6 +788,36 @@ export class DefaultTable extends React.PureComponent {
     });
     onChange(columns);
   };
+  onFilterChange = (filtered) => {
+    const { columns, onChange } = this.props;
+    const obj = _.keyBy(filtered, 'columnName');
+    columns.forEach(v => {
+      v.filterValue = obj[v.name] ? obj[v.name].value : '';
+      v.filterOperator = obj[v.name] ? obj[v.name].operation : 'contains';
+    });
+    onChange(columns);
+  };
+  onSortingChange = (sorted) => {
+    const { columns, onChange } = this.props;
+    const obj = _.keyBy(sorted, 'columnName');
+    columns.forEach(v => {
+      if (obj[v.name]) {
+        v.sort =  obj[v.name].direction;
+      } else {
+        delete v.sort;
+      }
+    });
+    onChange(columns);
+  };
+  onResising = (columnFlexWidth, changed) => {
+    const { columns, onChange } = this.props;
+    changed.forEach((v, i) => {
+      // if (v.width !== columnFlexWidth) {
+        columns[i].width = v.width;
+      // }
+    });
+    onChange(columns);
+  };
   tableRoot = (props) => <Grid.Root {...props} className="material-table-bordered" style={{ height: "100%", maxHeight: this.props.rows.length ? 550 : 400 }}/>;
   render() {
     const { rows, columns } = this.props;
@@ -625,12 +837,30 @@ export class DefaultTable extends React.PureComponent {
                   getRowId={getRowId}
                   rootComponent={this.tableRoot}
                 >
+                  <DataTypeProvider
+                    for={columns.filter(v => v.type === 'number').map(v => v.name)}
+                    availableFilterOperations={Object.keys(filterNumberFields)}
+                  />
+                  <DataTypeProvider
+                    for={columns.filter(v => v.type !== 'number').map(v => v.name)}
+                    availableFilterOperations={Object.keys(filterAllFields)}
+                  />
                   <DragDropProvider/>
+                  <SortingState
+                    sorting={columns.filter(v => v.sort).map(v => ({columnName: v.name, direction: v.sort}))}
+                    onSortingChange={this.onSortingChange}
+                  />
                   <GroupingState
                     grouping={columns.filter(v => v.grouping).map(v => ({columnName: v.name}))}
                     onGroupingChange={this.onGroupingChange}
                   />
+                  <FilteringState
+                    filters={columns.filter(v => v.filterValue).map(v => ({ columnName: v.name, value: v.filterValue, operation: v.filterOperator}))}
+                    onFiltersChange={this.onFilterChange}
+                  />
+                  <IntegratedSorting />
                   <IntegratedGrouping/>
+                  <IntegratedFiltering/>
                   <VirtualTable
                     height="auto"
                     tableComponent={TableComponent}
@@ -640,30 +870,21 @@ export class DefaultTable extends React.PureComponent {
                   <Toolbar/>
                   <GroupingPanel
                     showGroupingControls
+                    showSortingControls
                     messages={{groupByColumn: 'Перетащите сюда колонку для группировки'}}
                   />
                   <TableColumnReordering
                     order={columns.map(v => v.name)}
                     onOrderChange={this.onOrderChange}
                   />
-                  {/*<TableColumnResizing
-                    columnWidths={columns.map(v => {
-                      return {
-                        columnName: v.name,
-                        width: v.width || columnFlexWidth
-                      };
-                    })}
-                    onColumnWidthsChange={changed => {
-                      changed.forEach((v, i) => {
-                        if (v.width !== columnFlexWidth) {
-                          columns[i].width = v.width;
-                        }
-                      });
-                      this.setState({columns: columns.slice()});
-                    }}
-                  />*/}
+                  <TableColumnResizing
+                    columnWidths={columns.map(v => ({columnName: v.name, width: v.width || columnFlexWidth}))}
+                    onColumnWidthsChange={this.onResising.bind(this, columnFlexWidth)}
+                  />
                   <TableHeaderRow
+                    showSortingControls
                     cellComponent={HeaderCellComponentBase}
+                    messages={headerMessages}
                   />
                   <TableColumnVisibility
                     hiddenColumnNames={columns.filter(v => v.hidden).map(v => v.name)}
@@ -672,8 +893,10 @@ export class DefaultTable extends React.PureComponent {
                   <ColumnChooser
                     messages={{showColumnChooser: 'Выбор видимых колонок'}}
                   />
-                  <TableBandHeader
-                    columnBands={[]}
+                  <TableFilterRow
+                    showFilterSelector
+                    iconComponent={FilterIcon}
+                    messages={filterMessages}
                   />
                 </Grid>
               </div>
