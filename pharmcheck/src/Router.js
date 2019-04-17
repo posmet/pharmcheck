@@ -3,7 +3,7 @@ import { Router, Switch, Route, Redirect } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import { ToastContainer, toast } from 'react-toastify';
 import Loader from '@components/common/Loader';
-import createBrowserHistory from 'history/createBrowserHistory';
+import {createBrowserHistory} from 'history';
 import RoutingStore from '@stores/Routing';
 import { syncHistoryWithStore } from 'mobx-react-router';
 import Secure from '@components/secure/Wrapper';

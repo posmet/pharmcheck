@@ -7173,14 +7173,28 @@ a.text-dark:hover, a.text-dark:focus {
       display: none !important; }
 
 .report-droppable-container {
-  border: 1px solid #e7eaec;
   display: flex;
   flex-direction: column;
   padding: 8px;
-  margin-top: 20px;
   min-height: 150px;
   margin-bottom: 20px;
-  overflow: auto; }
+  overflow: auto;
+  flex: 1; }
+  .report-droppable-container-wrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    border: 1px solid #e7eaec;
+    margin-top: 20px; }
+    .report-droppable-container-wrapper > .card-header {
+      padding: 5px 10px; }
+    .report-droppable-container-wrapper > .card-body {
+      padding: 0;
+      display: flex; }
+    .report-droppable-container-wrapper.and {
+      margin-right: 8px; }
+  .report-droppable-container .placeholder {
+    opacity: 0.5; }
   .report-droppable-container .item {
     margin-top: 10px;
     padding: 10px;
@@ -7219,7 +7233,12 @@ a.text-dark:hover, a.text-dark:focus {
             flex: 1; }
       .report-droppable-container .item .condition__input {
         display: flex;
-        flex: 1; }
+        flex: 1;
+        min-width: 200px; }
+        .report-droppable-container .item .condition__input-container {
+          display: flex;
+          flex: 1;
+          align-items: center; }
         .report-droppable-container .item .condition__input .react-select__control {
           display: flex;
           flex: 1; }
@@ -7448,6 +7467,49 @@ html {
       color: #a6afb7; }
     .input-group .input-group__icon > .calendar {
       opacity: 0.5; }
+
+.creatable-items {
+  max-width: 85%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap; }
+  .creatable-items__item {
+    background-color: #e6e6e6;
+    border-radius: 2px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    margin: 2px;
+    min-width: 0;
+    box-sizing: border-box;
+    cursor: default; }
+    .creatable-items__item-label {
+      border-radius: 2px;
+      color: #333333;
+      font-size: 85%;
+      overflow: hidden;
+      padding: 3px;
+      padding-left: 6px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      box-sizing: border-box; }
+    .creatable-items__item-remove {
+      -webkit-align-items: center;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      border-radius: 2px;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      padding-left: 4px;
+      padding-right: 4px;
+      box-sizing: border-box; }
+      .creatable-items__item-remove:hover {
+        background-color: #FFBDAD;
+        color: #DE350B; }
 
 .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle, .react-datepicker-popper[data-placement^="top"] .react-datepicker__triangle, .react-datepicker__year-read-view--down-arrow,
 .react-datepicker__month-read-view--down-arrow,
