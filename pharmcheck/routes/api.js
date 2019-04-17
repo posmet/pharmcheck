@@ -78,13 +78,21 @@ module.exports = function (app) {
 				fields: [
 					{ id: 1, name: 'Сеть', key: 'Group_Name' },
 					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
-					{ id: 3, name: 'Дата', type: 'date', key: 'dat' },
-					{ id: 4, name: 'Наименование', key: 'G_name' },
-					{ id: 5, name: 'ШК', key: 'Barcode' },
-					{ id: 6, name: 'Количество', type: 'number', key: 'Qty' },
-					{ id: 7, name: 'Цена', type: 'number', key: 'Price' },
-					{ id: 8, name: 'Сумма', type: 'number', key: 'Sm' },
-					{ id: 9, name: 'Позиций', type: 'number', key: 'QtyPos' }
+					{ id: 3, name: 'Адрес', key: 'Ph_Addr' },
+					{ id: 4, name: 'ФИАС', key: 'Ph_FIAS' },
+					{ id: 5, name: 'ИНН Аптеки', key: 'Ph_INN' },
+					{ id: 6, name: 'Дата', type: 'date', key: 'dat' },
+					{ id: 7, name: 'Код SCU', key: 'G_ID' },
+					{ id: 8, name: 'Наименование', key: 'G_name' },
+					{ id: 9, name: 'ШК', key: 'Barcode' },
+					{ id: 10, name: 'Количество', type: 'number', key: 'Qty' },
+					{ id: 11, name: 'Цена', type: 'number', key: 'Price' },
+					{ id: 12, name: 'Величина скидки', type: 'number', key: 'Discount' },
+					{ id: 13, name: 'Позиций', type: 'number', key: 'QtyPos' },
+					{ id: 14, name: 'НФН', key: 'Cap_Number' },
+					{ id: 15, name: 'НФД', key: 'Doc_Number' },
+					{ id: 16, name: 'ФПД', key: 'Doc_Prop' }
+
 				]
 			},
 			{
@@ -94,10 +102,33 @@ module.exports = function (app) {
 				fields: [
 					{ id: 1, name: 'Сеть', key: 'Group_Name' },
 					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
-					{ id: 3, name: 'Дата', type: 'date', key: 'Dat' },
-					{ id: 4, name: 'Наименование', key: 'G_name' },
-					{ id: 5, name: 'Количество', type: 'number', key: 'Qty' },
-					{ id: 6, name: 'ШК', key: 'Barcode' }
+					{ id: 3, name: 'ИНН Аптеки', key: 'Ph_INN' },
+					{ id: 4, name: 'Дата', type: 'date', key: 'Dat' },
+					{ id: 5, name: 'Дата на склад', type: 'date', key: 'StockDat' },
+					{ id: 6, name: 'Срок годности', type: 'date', key: 'ExpireDat' },
+					{ id: 7, name: 'Код SKU', key: 'G_ID' },
+					{ id: 8, name: 'Наименование', key: 'G_name' },
+					{ id: 9, name: 'Количество', type: 'number', key: 'Qty' },
+					{ id: 10, name: 'ШК', key: 'Barcode' }
+				]
+			},
+			{
+				id: 2,
+				name: 'Приходы',
+				description: 'Поиск по Приходам',
+				fields: [
+					{ id: 1, name: 'Сеть', key: 'Group_Name' },
+					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
+					{ id: 3, name: 'ИНН Аптеки', key: 'Ph_INN' },
+					{ id: 4, name: 'Дата', type: 'date', key: 'Dat' },
+					{ id: 5, name: 'Код SKU', key: 'G_ID' },
+					{ id: 6, name: 'Наименование', key: 'G_name' },
+					{ id: 7, name: 'Количество', type: 'number', key: 'Qty' },
+					{ id: 8, name: 'Цена', type: 'number', key: 'Price' },
+					{ id: 9, name: 'ШК', key: 'Barcode' },
+					{ id: 10, name: 'Поставщик',  key: 'Vendor' },
+					{ id: 11, name: 'ИНН Пост',  key: 'VendorINN' }
+
 				]
 			},
 			{
@@ -110,7 +141,7 @@ module.exports = function (app) {
 			]
 			},
 			{
-				id: 4,
+				id: 5,
 			name: 'Аптеки',
 			description: 'Поиск по Аптекам',
 			fields: [
@@ -135,9 +166,12 @@ module.exports = function (app) {
 		  sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
 	  }
 	  if (req.params.repid == 3) {
-		  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+		  sqlString = 'SELECT * from purchases_view' + addwhere(req.body.filter);
 	  }
 	  if (req.params.repid == 4) {
+		  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+	  }
+	  if (req.params.repid == 5) {
     	  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
 		}
 	  console.log(sqlString);
