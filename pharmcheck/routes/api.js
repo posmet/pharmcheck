@@ -101,7 +101,7 @@ module.exports = function (app) {
 				]
 			},
 			{
-				id: 3,
+				id: 4,
 			    name: 'Позиции',
 			    description: 'Поиск по Позициям',
 			    fields: [
