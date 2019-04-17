@@ -15,9 +15,17 @@ const addwhere = function (conds) {
 			sqlString = sqlString + ' where ';
 			sqlString = sqlString + conds.reduce(function (prev, curr) {
 				var Whr = prev;
-				if (prev !== '')
-					Whr = Whr + ' and ';
+				if (prev !== '') {
+					if (curr.common === 'or') {
+						Whr = Whr + ' or ';
+					} else {
+						Whr = Whr + ' and ';
+					}
+				if (curr.condition === 'nls') {
+					Whr = Whr + ' not (';
+				}
 				Whr = Whr + curr.key;
+
 				switch (curr.condition) {
 					case 'eq':
 						Whr = Whr + " = '" + curr.value + "'";
@@ -42,6 +50,12 @@ const addwhere = function (conds) {
 						break;
 					case 'lt':
 						Whr = Whr + " < '" + curr.value + "'";
+						break;
+					case 'ls':
+						Whr = Whr + " IN ('" + curr.value.join() + "')";
+						break;
+					case 'nls':
+						Whr = Whr + " IN ('" + curr.value.join() + "'))";
 						break;
 					case 'btw':
 						Whr = Whr + " between '" + curr.value + "' and '" + curr.value2 + "'";
