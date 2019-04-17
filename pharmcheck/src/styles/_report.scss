@@ -19,14 +19,33 @@
 }
 
 .report-droppable-container {
-  border: 1px solid #e7eaec;
+  &-wrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    border: 1px solid #e7eaec;
+    margin-top: 20px;
+    &>.card-header {
+      padding: 5px 10px;
+    }
+    &>.card-body {
+      padding: 0;
+      display: flex;
+    }
+    &.and {
+      margin-right: 8px;
+    }
+  }
   display: flex;
   flex-direction: column;
   padding: 8px;
-  margin-top: 20px;
   min-height: 150px;
   margin-bottom: 20px;
   overflow: auto;
+  flex: 1;
+  .placeholder {
+    opacity: 0.5;
+  }
   .item {
     margin-top: 10px;
     padding: 10px;
@@ -78,6 +97,12 @@
       &__input {
         display: flex;
         flex: 1;
+        min-width: 200px;
+        &-container {
+          display: flex;
+          flex: 1;
+          align-items: center;
+        }
         .react-select__control {
           display: flex;
           flex: 1;

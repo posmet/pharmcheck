@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/lib/Creatable';
 import uuid from 'uuid/v4';
 import {InputGroup} from 'react-bootstrap';
 import DatePicker from "react-datepicker";
@@ -10,11 +10,13 @@ import {toJS} from 'mobx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 import { Portal } from 'react-overlays';
-import AsyncSelect from 'react-select/lib/Async';
 import * as moment from 'moment';
 const offset = moment().utcOffset();
 import { observer, inject } from 'mobx-react';
+import {Card} from 'react-bootstrap';
+import _ from 'lodash';
 
+const datepickerFormat = "MM.DD.YYYY";
 
 const getFieldItemStyle = (isDragging, draggableStyle) => ({
   // styles we need to apply on draggables
@@ -40,6 +42,19 @@ const CalendarContainer = ({children}) => {
     <Portal container={el}>
       {children}
     </Portal>
+  )
+};
+
+const CreatableItem = ({onRemove, item, index}) => {
+  return (
+    <div className="creatable-items__item">
+      <div className="creatable-items__item-label">
+        {typeof item === 'string' ? item : item.format(datepickerFormat)}
+      </div>
+      <div className="creatable-items__item-remove" onClick={onRemove.bind(null, index)}>
+        <svg height="14" width="14" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z" /></svg>
+      </div>
+    </div>
   )
 };
 
@@ -78,6 +93,14 @@ export class FilterItem extends Component {
         label: "не пусто"
       },
       {
+        value: "ls",
+        label: "в списке"
+      },
+      {
+        value: "nls",
+        label: "не в списке"
+      },
+      {
         value: "gt",
         label: "больше"
       },
@@ -97,7 +120,7 @@ export class FilterItem extends Component {
         });
       }
     } else {
-      options = this.options.slice(0, 6);
+      options = this.options.slice(0, 8);
     }
     this.state = {
       conditionOptions: options,
@@ -123,15 +146,39 @@ export class FilterItem extends Component {
       .then(() => this.setState({selectIsLoading: false}));
   };
 
-  handleSelectChange = (key, v) => {
-    if (key === 'condition') {
-      this.setState({[key]: v});
-      this.props.onChange({[key]: v.value});
-    } else {
-      let obj = {[key]: v.label, valueID: v.value};
-      this.setState(obj);
-      this.props.onChange(obj);
+  handleSelectChange = (v) => {
+    let obj = {value: v.label, valueID: v.value};
+    this.setState(obj);
+    this.props.onChange(obj);
+  };
+
+  handleMultiSelectChange = (v) => {
+    let obj = {value: v.map(item => item.label), valueID: v.map(item => item.value)};
+    this.setState(obj);
+    this.props.onChange(obj);
+  };
+
+  handleConditionChange = (v) => {
+    let stateChangeObj = {condition: v};
+    if (['nl', 'nnl'].indexOf(v.value) > -1) {
+      stateChangeObj.value = '';
+    } else if (["ls", "nls"].indexOf(v.value) > -1) {
+      if (["ls", "nls"].indexOf(this.state.condition.value) === -1 && this.state.value) {
+        stateChangeObj.value = [this.state.value];
+        if (this.state.valueID) {
+          stateChangeObj.valueID = [this.state.valueID];
+        }
+      }
+    } else if (["ls", "nls"].indexOf(this.state.condition.value) > -1) {
+      if (this.state.value && this.state.value.length) {
+        stateChangeObj.value = this.state.value[0];
+        if (this.state.valueID && this.state.valueID.length) {
+          stateChangeObj.valueID = this.state.valueID[0];
+        }
+      }
     }
+    this.setState({...stateChangeObj});
+    this.props.onChange({...stateChangeObj, condition: v.value});
   };
 
   handleSelectInputChange = (str, { action }) => {
@@ -142,7 +189,11 @@ export class FilterItem extends Component {
     if (str.length) {
       stateOpts.selectIsLoading = true;
     }
-    this.setState(stateOpts, () => this.search(str));
+    this.setState(stateOpts, () => {
+      if (['G_name', 'Ph_Name'].indexOf(this.props.value.key) > -1) {
+        this.search(str);
+      }
+    });
   };
 
   handleInputChange = (e) => {
@@ -151,44 +202,142 @@ export class FilterItem extends Component {
     this.props.onChange({[name]: value});
   };
 
-  handleDateChange = (key, value) => {
+  handleDate1Change = (isMulti, value) => {
     value = value.add(offset, 'minutes');
-    this.setState({[key]: value});
-    this.props.onChange({[key]: value});
+    if (isMulti) {
+      let array = this.state.value || [];
+      value = array.concat([value]);
+    }
+    this.setState({value: value});
+    this.props.onChange({value: value});
+  };
+
+  handleDate2Change = (isMulti, value) => {
+    value = value.add(offset, 'minutes');
+    if (isMulti) {
+      let array = this.state.value2 || [];
+      value = array.concat([value]);
+    }
+    this.setState({value2: value});
+    this.props.onChange({value2: value});
+  };
+
+  onDelete = () => {
+    this.props.onDelete(this.props.value, this.props.index);
+  };
+
+  onCreateOpenMenu = (v) => {
+    return `Создать: ${v}`;
+  };
+
+  openDatePicker1 = () => {
+    this.input1.setOpen(true);
+  };
+
+  openDatePicker2 = () => {
+    this.input2.setOpen(true);
+  };
+
+  onRemoveDate = (index) => {
+    let array = this.state.value || [];
+    array.splice(index, 1);
+    this.setState({value: array});
+    this.props.onChange({value: array});
+  };
+
+  getInput = (key) => {
+    return (
+      <div className="condition__input">
+        <input className="form-control" placeholder={this.placeholder}
+               value={this.state[key] || ''}
+               name={key} onChange={this.handleInputChange}/>
+      </div>
+    )
+  };
+
+  getDatePicker = (key, isMulti) => {
+    let opts = {
+      selectsStart: true,
+      selectsEnd: false,
+      value: this.state.value,
+      onChange: this.handleDate1Change,
+      onIconClick: this.openDatePicker1
+    };
+    if (key === 'input2') {
+      opts.selectsStart = false;
+      opts.selectsEnd = true;
+      opts.value = this.state.value2;
+      opts.onChange = this.handleDate2Change;
+      opts.onIconClick = this.openDatePicker2;
+    }
+    opts.onChange = opts.onChange.bind(this, isMulti);
+    const pickerAttrs = {
+      ref: (c) => this[key] = c,
+      dateFormat: datepickerFormat,
+      className: "form-control",
+      placeholderText: this.placeholder,
+      popperContainer: CalendarContainer,
+      onChange: opts.onChange
+    };
+    if (!isMulti) {
+      pickerAttrs.selected = opts.value ? moment(opts.value) : null;
+    }
+    if (['btw'].indexOf(this.state.condition.value) > -1) {
+      pickerAttrs.selectsStart = opts.selectsStart;
+      pickerAttrs.selectsEnd = opts.selectsEnd;
+      pickerAttrs.startDate = this.state.value;
+      pickerAttrs.endDate = this.state.value2;
+    }
+    return (
+      <div className="condition__input-container">
+        {isMulti && opts.value && opts.value.length ? (
+          <div className="creatable-items">
+            {Array.isArray(opts.value) ? opts.value.map((v, i) => <CreatableItem key={i} item={v} index={i} onRemove={this.onRemoveDate}/>) : null}
+          </div>
+        ) : null}
+        <InputGroup className="condition__input">
+          <InputGroup.Prepend>
+            <InputGroup.Text id={key} onClick={opts.onIconClick}><FontAwesomeIcon icon={faCalendarAlt}  /></InputGroup.Text>
+          </InputGroup.Prepend>
+          <DatePicker {...pickerAttrs}/>
+        </InputGroup>
+      </div>
+    );
   };
 
   render() {
-    const {value, value2, conditionOptions, condition, selectIsLoading, selectOptions} = this.state;
-    const {index, onDelete} = this.props;
+    const {value, value2, conditionOptions, condition, selectIsLoading, selectOptions, valueID} = this.state;
     const {title, type, key} = this.props.value;
     let input1 = null;
     let input2 = null;
     if (condition) {
-      if (['nl', 'nnl'].indexOf(condition.value) === -1) {
+      if (['ls', 'nls'].indexOf(condition.value) > -1) {
         if (type === 'date') {
-          const pickerAttrs = {
-            ref: (c) => this.input1 = c,
-            selected: value ? moment(value) : null,
-            dateFormat: "MM.DD.YYYY",
-            className: "form-control",
-            placeholderText: this.placeholder,
-            popperContainer: CalendarContainer,
-            onChange: this.handleDateChange.bind(this, 'value')
-          };
-          if (['btw'].indexOf(condition.value) > -1) {
-            pickerAttrs.selectsStart = true;
-            pickerAttrs.startDate = value;
-            pickerAttrs.endDate = value2;
-          }
+          input1 = this.getDatePicker('input1', true);
+        } else {
           input1 = (
-            <InputGroup className="condition__input">
-              <InputGroup.Prepend>
-                <InputGroup.Text id="input1" onClick={() => this.input1.setOpen(true)}><FontAwesomeIcon icon={faCalendarAlt}  /></InputGroup.Text>
-              </InputGroup.Prepend>
-              <DatePicker {...pickerAttrs}/>
-            </InputGroup>
+            <CreatableSelect
+              className="condition__input react-select"
+              placeholder={this.placeholder}
+              loadingMessage={() => ''}
+              isLoading={selectIsLoading}
+              noOptionsMessage={() => ''}
+              menuPosition="fixed"
+              classNamePrefix="react-select"
+              menuShouldBlockScroll
+              allowCreateWhileLoading
+              formatCreateLabel={this.onCreateOpenMenu}
+              defaultValue={value && Array.isArray(value) ? value.map((v, i) => ({label: v, value: valueID || i})) : []}
+              isMulti
+              onInputChange={this.handleSelectInputChange}
+              onChange={this.handleMultiSelectChange}
+              options={selectOptions}/>
           );
-        } else if (['G_name', 'Ph_Name'].indexOf(key) > -1 && condition.value === 'eq') {
+        }
+      } else if (['nl', 'nnl'].indexOf(condition.value) === -1) {
+        if (type === 'date') {
+          input1 = this.getDatePicker('input1');
+        } else if (['G_name', 'Ph_Name'].indexOf(key) > -1 && ['eq', 'neq'].indexOf(condition.value) > -1) {
           input1 = (
             <Select
               className="condition__input react-select"
@@ -201,54 +350,24 @@ export class FilterItem extends Component {
               menuShouldBlockScroll
               inputValue={value}
               onInputChange={this.handleSelectInputChange}
-              onChange={this.handleSelectChange.bind(this, 'value')}
+              onChange={this.handleSelectChange}
               options={selectOptions} />
           );
         } else {
-          input1 = (
-            <div className="condition__input">
-              <input className="form-control" placeholder={this.placeholder}
-                     value={value || ''}
-                     name="value" onChange={this.handleInputChange}/>
-            </div>
-          );
+          input1 = this.getInput('value');
         }
-      }
-      if (['btw'].indexOf(condition.value) > -1) {
-        if (type === 'date') {
-          input2 = (
-            <InputGroup className="condition__input">
-              <InputGroup.Prepend>
-                <InputGroup.Text id="input1" onClick={() => this.input2.setOpen(true)}><FontAwesomeIcon icon={faCalendarAlt}  /></InputGroup.Text>
-              </InputGroup.Prepend>
-              <DatePicker
-                ref={(c) => this.input2 = c}
-                selected={value2 ? moment(value2) : null}
-                dateFormat="MM.DD.YYYY"
-                className="form-control"
-                placeholderText={this.placeholder}
-                popperContainer={CalendarContainer}
-                selectsEnd
-                startDate={value}
-                endDate={value2}
-                onChange={this.handleDateChange.bind(this, 'value2')}
-              />
-            </InputGroup>
-          );
-        } else {
-          input2 = (
-            <div className="condition__input">
-              <input className="form-control" placeholder="Введите значение для сравнения"
-                     value={value2 || ''}
-                     name="value2" onChange={this.handleInputChange}/>
-            </div>
-          );
+        if (['btw'].indexOf(condition.value) > -1) {
+          if (type === 'date') {
+            input2 = this.getDatePicker('input2');
+          } else {
+            input2 = this.getInput('value2');
+          }
         }
       }
     }
     return (
       <div className="condition">
-        <div className="close" onClick={onDelete.bind(null, this.props.value, index)}>×</div>
+        <div className="close" onClick={this.onDelete}>×</div>
         <div className="condition__header">
           <div className="condition__name">{title}</div>
           <div className="condition__select">
@@ -258,7 +377,7 @@ export class FilterItem extends Component {
               menuPosition="fixed"
               menuShouldBlockScroll
               value={condition}
-              onChange={this.handleSelectChange.bind(this, 'condition')}
+              onChange={this.handleConditionChange}
               options={conditionOptions}
             />
           </div>
@@ -275,44 +394,75 @@ export class FilterItem extends Component {
 export class Filter extends Component {
 
   onDelete = (item, index) => {
-    const { to, onChange } = this.props;
-    to.splice(index, 1);
-    onChange(to);
+    const splitted = this.splitArray();
+    if (item.common === 'or') {
+      index += splitted.and.length;
+    }
+    this.props.to.splice(index, 1);
+    this.props.onChange(this.props.to);
   };
 
-  componentWillReceiveProps(props) {
-    // console.log(props);
-  }
-
   onDragEnd = result => {
-    const { to, from, onChange } = this.props;
-    const { source, destination, draggableId } = result;
+    let { to } = this.props;
 
     // dropped outside the list
-    if (!destination) {
+    if (!result.destination) {
       return;
     }
 
-    let item = from.find(row => row.id === draggableId);
+    let item = this.props.from.find(row => row.id === result.draggableId);
+    const splitted = this.splitArray();
+    if (result.source.droppableId === 'or') {
+      result.source.index += splitted.and.length;
+    }
+    if (result.destination.droppableId === 'or') {
+      result.destination.index += splitted.and.length;
+    }
     if (item) {
       const clone = toJS(item);
       clone.id = uuid();
       clone.condition = "eq";
-      to.splice(destination.index, 0, clone);
-      onChange(to);
+      clone.common = result.destination.droppableId;
+      to.splice(result.destination.index, 0, clone);
+      to = _.orderBy(to, v => {
+        return !v.common || v.common === 'and';
+      }, 'desc');
+      this.props.onChange(to);
     } else {
-      item = to.find(row => row.id === draggableId);
+      item = to.find(row => row.id === result.draggableId);
       if (item) {
-        const [removed] = to.splice(result.source.index, 1);
-        to.splice(result.destination.index, 0, removed);
-        onChange(to);
+        if (result.destination.droppableId === result.source.droppableId) {
+          const [removed] = to.splice(result.source.index, 1);
+          to.splice(result.destination.index, 0, removed);
+          this.props.onChange(to);
+        } else {
+          const [removed] = to.splice(result.source.index, 1);
+          removed.common = result.destination.droppableId;
+          to.splice(result.destination.droppableId === 'or' ? result.destination.index - 1 : result.destination.index, 0, removed);
+          this.props.onChange(to);
+        }
       }
     }
 
   };
 
+  splitArray = () => {
+    const obj = {
+      and: [],
+      or: []
+    };
+    this.props.to.forEach(v => {
+      if (v.common === 'or') {
+        obj.or.push(v);
+      } else {
+        obj.and.push(v);
+      }
+    });
+    return obj;
+  };
+
   render() {
-    const { from, to, onChange } = this.props;
+    const splitted = this.splitArray();
 
     return (
       <ErrorBoundary>
@@ -323,7 +473,7 @@ export class Filter extends Component {
                    ref={provided.innerRef}
                    {...provided.droppableProps}
               >
-                {from.map((item, index) => (
+                {this.props.from.map((item, index) => (
                   <Draggable
                     key={item.id}
                     draggableId={item.id}
@@ -352,34 +502,74 @@ export class Filter extends Component {
               </div>
             )}
           </Droppable>
-          <Droppable droppableId="droppable2" style={{minHeight: 100}}>
-            {(provided, snapshot) => (
-              <div className="report-droppable-container"
-                   ref={provided.innerRef}
-                   style={getSelectedListStyle(snapshot.isDraggingOver)}
-                   {...provided.droppableProps}
-              >
-                { !to.length && !snapshot.isDraggingOver ? <div className="placeholder">Перетащите сюда критерии из верхнего списка</div> : null }
-                { to.map((item, index) => (
-                  <Draggable
-                    key={item.id}
-                    draggableId={item.id}
-                    index={index}>
-                    {(provided, snapshot) => (
-                      <div className="item"
-                           ref={provided.innerRef}
-                           {...provided.draggableProps}
-                           {...provided.dragHandleProps}
-                      >
-                        <FilterItem value={item} index={index} onChange={(v) => Object.assign(item, v)} onDelete={this.onDelete}/>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
+          <div style={{display: 'flex', flex: 1}}>
+            <Card className="report-droppable-container-wrapper and">
+              <Card.Header>Условие: <strong>И</strong></Card.Header>
+              <Card.Body>
+                <Droppable droppableId="and">
+                  {(provided, snapshot) => (
+                    <div className="report-droppable-container"
+                         ref={provided.innerRef}
+                         style={getSelectedListStyle(snapshot.isDraggingOver)}
+                         {...provided.droppableProps}
+                    >
+                      { !splitted.and.length && !snapshot.isDraggingOver ? <div className="placeholder">Перетащите сюда критерии из верхнего списка</div> : null }
+                      { splitted.and.map((item, index) => (
+                        <Draggable
+                          key={item.id}
+                          draggableId={item.id}
+                          index={index}>
+                          {(provided, snapshot) => (
+                            <div className="item"
+                                 ref={provided.innerRef}
+                                 {...provided.draggableProps}
+                                 {...provided.dragHandleProps}
+                            >
+                              <FilterItem condition="and" value={item} index={index} onChange={(v) => Object.assign(item, v)} onDelete={this.onDelete}/>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </Card.Body>
+            </Card>
+            <Card className="report-droppable-container-wrapper">
+              <Card.Header>Условие: <strong>ИЛИ</strong></Card.Header>
+              <Card.Body>
+                <Droppable droppableId="or">
+                  {(provided, snapshot) => (
+                    <div className="report-droppable-container"
+                         ref={provided.innerRef}
+                         style={getSelectedListStyle(snapshot.isDraggingOver)}
+                         {...provided.droppableProps}
+                    >
+                      { !splitted.or.length && !snapshot.isDraggingOver ? <div className="placeholder">Перетащите сюда критерии из верхнего списка</div> : null }
+                      { splitted.or.map((item, index) => (
+                        <Draggable
+                          key={item.id}
+                          draggableId={item.id}
+                          index={index}>
+                          {(provided, snapshot) => (
+                            <div className="item"
+                                 ref={provided.innerRef}
+                                 {...provided.draggableProps}
+                                 {...provided.dragHandleProps}
+                            >
+                              <FilterItem condition="or" value={item} index={index} onChange={(v) => Object.assign(item, v)} onDelete={this.onDelete}/>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </Card.Body>
+            </Card>
+          </div>
         </DragDropContext>
       </ErrorBoundary>
     );
