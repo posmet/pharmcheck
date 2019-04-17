@@ -21,8 +21,9 @@ const addwhere = function (conds) {
 					} else {
 						Whr = Whr + ' and ';
 					}
-				if (curr.condition === 'nls') {
-					Whr = Whr + ' not (';
+					if (curr.condition === 'nls') {
+						Whr = Whr + ' not (';
+					}
 				}
 				Whr = Whr + curr.key;
 
