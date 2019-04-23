@@ -84,7 +84,7 @@ class Home extends Component {
                     <td>{item.status}</td>
                     <td>{item.format}</td>
                     <td>
-                      <Button variant="outline-primary" size="sm" disabled={item.status === 1}>Скачать</Button>
+                      <Button variant="outline-primary" size="sm" disabled={item.status === 1}><a href={`${process.env.HOST}/public/${item.id}.${item.format}`} download>Скачать</a></Button>
                       <Button variant="outline-danger" size="sm" onClick={() => ReportStore.deleteSavedReport(item.id)}>Удалить</Button>
                     </td>
                   </tr>
