@@ -26,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use('public', express.static(path.join(__dirname, 'reports')));
 app.use(cors());
 require('./config');
 require('./boot')(app);
