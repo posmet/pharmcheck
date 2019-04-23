@@ -6,6 +6,8 @@ const messageManager = require('../services/Message');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
+const Excel = require('exceljs');
+const path = require('path');
 
 const addwhere = function (conds) {
 	let sqlString = '';
@@ -71,6 +73,30 @@ const addwhere = function (conds) {
 
 };
 
+const getReportById = async (repid, req) => {
+  const request = new sql.Request(pool);
+  let sqlString = "";
+  console.log(repid);
+  if (repid == 1) {
+    sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
+  }
+  if (repid == 2) {
+    sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
+  }
+  if (repid == 3) {
+    sqlString = 'SELECT * from purchases_view' + addwhere(req.body.filter);
+  }
+  if (repid == 4) {
+    sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
+  }
+  if (repid == 5) {
+    sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
+  }
+  console.log(sqlString);
+  console.log('Query');
+  return await request.query(sqlString);
+};
+
 module.exports = function (app) {
 
   app.get('/api/profile', authService.isAuthenticated(), middleware.asyncMiddleware(async (req, res) => {
@@ -98,7 +124,7 @@ module.exports = function (app) {
 					{ id: 5, name: 'ИНН Аптеки', key: 'Ph_INN' },
 					{ id: 6, name: 'Дата', type: 'date', key: 'dat' },
 					{ id: 7, name: 'Код SCU', key: 'G_ID' },
-					{ id: 8, name: 'Наименование', key: 'G_Name' },
+					{ id: 8, name: 'Наименование', key: 'G_name' },
 					{ id: 9, name: 'ШК', key: 'Barcode' },
 					{ id: 10, name: 'Количество', type: 'number', key: 'Qty' },
 					{ id: 11, name: 'Цена', type: 'number', key: 'Price' },
@@ -128,7 +154,7 @@ module.exports = function (app) {
 				]
 			},
 			{
-				id: 3,
+				id: 2,
 				name: 'Приходы',
 				description: 'Поиск по Приходам',
 				fields: [
@@ -164,48 +190,14 @@ module.exports = function (app) {
 				{ id: 2, name: 'Аптека', key: 'Ph_Name' }
 			]
 			}
-			,
-			{
-				id: 6,
-				name: 'Протокол',
-				description: 'Поиск по Протоколу',
-				fields: [
-					{ id: 1, name: 'Сеть', key: 'batch_id' },
-					{ id: 2, name: 'Время', key: 'dat' },
-					{ id: 3, name: 'Сообщение', key: 'msg' }
 
-				]
-			}
 
 		];
 		res.json(reports);
 	}));
 
   app.post('/api/reports/:repid',  middleware.asyncMiddleware(async (req, res) => {
-	  const request = new sql.Request(pool);
-	  let sqlString = "";
-	  console.log(req.params.repid);
-	  if (req.params.repid == 1) {
-		  sqlString = 'SELECT * from sales_view' + addwhere(req.body.filter);
-	  }
-	  if (req.params.repid == 2) {
-		  sqlString = 'SELECT * from remains_view' + addwhere(req.body.filter);
-	  }
-	  if (req.params.repid == 3) {
-		  sqlString = 'SELECT * from purchases_view' + addwhere(req.body.filter);
-	  }
-	  if (req.params.repid == 4) {
-		  sqlString = 'SELECT * from Items_view' + addwhere(req.body.filter);
-	  }
-	  if (req.params.repid == 5) {
-    	  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
-		}
-	  if (req.params.repid == 5) {
-		  sqlString = 'SELECT * from log order by dat desc' + addwhere(req.body.filter);
-	  }
-	  console.log(sqlString);
-	  console.log('Query');
-    const rs = await request.query(sqlString);
+    const rs = await getReportById(req.params.repid, req);
     res.json(rs.recordset);
   }));
 	app.post('/api/table/:key', middleware.asyncMiddleware(async (req, res) => {
@@ -275,6 +267,27 @@ module.exports = function (app) {
 		const sqlString = "insert into requests(tp,reptp,name,description,fields,filter,format,created,status) values(2," + req.params.reqid + ",'" + req.body.name + "','" + req.body.description + "','" + JSON.stringify(req.body.fields) + "','" + JSON.stringify(req.body.filter) + "','" + req.body.format + "',getdate(),'Сохранен')";
 		console.log(sqlString);
 		await request.query(sqlString);
+		if (['xls', 'csv'].indexOf(req.body.format) > -1) {
+			let key = req.body.format === 'xls' ? 'xlsx' : 'csv';
+      try {
+      	const rsId = await request.query("select max(id) from requests");
+        const rs = await getReportById(req.params.reqid, req);
+        let wb = new Excel.Workbook();
+        wb.creator = 'Pharmasoft';
+        let ws = wb.addWorksheet('Таблица');
+        ws.columns = req.body.fields.map(v => ({header: v.title, key: v.key || v.name}));
+        ws.getRow(1).font = {
+          bold: true
+        };
+        rs.recordset.forEach(item => {
+          ws.addRow(item);
+        });
+        const filename = `${rsId.recordset[0][0]}.${req.body.format}`;
+        await wb[key].writeFile(path.join(__dirname + "/..", "reports", filename));
+      } catch (e) {
+
+      }
+    }
 		res.json(messageManager.buildSuccess());
 	}));
 

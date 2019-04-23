@@ -15,7 +15,7 @@ class Report extends Component {
 
   state = {
     showFilter: false,
-    tableView: 'extended',
+    tableView: 'default',
     settingsModal: false,
     requestModal: false,
     saveModal: false
@@ -118,17 +118,6 @@ class Report extends Component {
               </ButtonToolbar>
             </div>
             <div className="report-data__body">
-              {/*<ReactDataGrid
-                columns={fields.map(item => {
-                  let obj = Object.assign({}, item);
-                  obj.width = 10;
-                  return item;
-                })}
-                rowGetter={i => data[i]}
-                rowsCount={data.length}
-                minHeight={data.length > 8 ? 350 : data.length * 35}
-              />*/}
-              {/*<TestTable/>*/}
               {state.tableView === 'default' ? (
                 <DefaultTable
                   rows={data}
