@@ -11,6 +11,7 @@ const Excel = require('exceljs');
 const path = require('path');
 
 const writeFile = util.promisify(fs.writeFile);
+const unlinkFile = util.promisify(fs.unlink);
 
 const addwhere = function (conds) {
 	let sqlString = '';
@@ -304,9 +305,22 @@ module.exports = function (app) {
 
 	app.delete('/api/savedReports/:reqid', middleware.asyncMiddleware(async (req, res) => {
 		const request = new sql.Request(pool);
+    let rs = null;
+    try {
+      rs = await request.query(`select * from requests where id=${req.params.reqid}`);
+		} catch (e) {
+    	console.log(e);
+		}
 		const sqlString = "delete from requests where id = " + req.params.reqid;
 		console.log(sqlString);
 		await request.query(sqlString);
+		if (rs && rs.recordset && rs.recordset.length) {
+      try {
+        await unlinkFile(path.join(__dirname + "/..", "reports", `${req.params.reqid}.${rs.recordset[0].format}`));
+      } catch (e) {
+        console.log(e);
+      }
+    }
 		res.json(messageManager.buildSuccess());
 	}));
 
