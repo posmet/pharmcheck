@@ -285,7 +285,7 @@ module.exports = function (app) {
         rs.recordset.forEach(item => {
           ws.addRow(item);
         });
-        const filename = `${rsId.recordset[0][0]}.${req.body.format}`;
+        const filename = `${rsId.recordset[0].id}.${req.body.format}`;
         await wb[key].writeFile(path.join(__dirname + "/..", "reports", filename));
       } catch (e) {
 		  console.log(e);
