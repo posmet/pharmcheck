@@ -6,8 +6,11 @@ const messageManager = require('../services/Message');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
+const util = require('util');
 const Excel = require('exceljs');
 const path = require('path');
+
+const writeFile = util.promisify(fs.writeFile);
 
 const addwhere = function (conds) {
 	let sqlString = '';
@@ -283,6 +286,7 @@ module.exports = function (app) {
           ws.addRow(item);
         });
         const filename = `${rsId.recordset[0][0]}.${req.body.format}`;
+        await writeFile(filename, '');
         await wb[key].writeFile(path.join(__dirname + "/..", "reports", filename));
       } catch (e) {
 
