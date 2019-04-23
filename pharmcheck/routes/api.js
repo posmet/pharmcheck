@@ -98,7 +98,7 @@ module.exports = function (app) {
 					{ id: 5, name: 'ИНН Аптеки', key: 'Ph_INN' },
 					{ id: 6, name: 'Дата', type: 'date', key: 'dat' },
 					{ id: 7, name: 'Код SCU', key: 'G_ID' },
-					{ id: 8, name: 'Наименование', key: 'G_name' },
+					{ id: 8, name: 'Наименование', key: 'G_Name' },
 					{ id: 9, name: 'ШК', key: 'Barcode' },
 					{ id: 10, name: 'Количество', type: 'number', key: 'Qty' },
 					{ id: 11, name: 'Цена', type: 'number', key: 'Price' },
@@ -128,7 +128,7 @@ module.exports = function (app) {
 				]
 			},
 			{
-				id: 2,
+				id: 3,
 				name: 'Приходы',
 				description: 'Поиск по Приходам',
 				fields: [
@@ -164,7 +164,18 @@ module.exports = function (app) {
 				{ id: 2, name: 'Аптека', key: 'Ph_Name' }
 			]
 			}
+			,
+			{
+				id: 6,
+				name: 'Протокол',
+				description: 'Поиск по Протоколу',
+				fields: [
+					{ id: 1, name: 'Сеть', key: 'batch_id' },
+					{ id: 2, name: 'Время', key: 'dat' },
+					{ id: 3, name: 'Сообщение', key: 'msg' }
 
+				]
+			}
 
 		];
 		res.json(reports);
@@ -189,6 +200,9 @@ module.exports = function (app) {
 	  if (req.params.repid == 5) {
     	  sqlString = 'SELECT * from Pharms' + addwhere(req.body.filter);
 		}
+	  if (req.params.repid == 5) {
+		  sqlString = 'SELECT * from log order by dat desc' + addwhere(req.body.filter);
+	  }
 	  console.log(sqlString);
 	  console.log('Query');
     const rs = await request.query(sqlString);
