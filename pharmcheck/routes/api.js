@@ -270,7 +270,7 @@ module.exports = function (app) {
 		if (['xls', 'csv'].indexOf(req.body.format) > -1) {
 			let key = req.body.format === 'xls' ? 'xlsx' : 'csv';
       try {
-      	const rsId = await request.query("select max(id) from requests");
+      	const rsId = await request.query("select max(id) as id from requests");
         const rs = await getReportById(req.params.reqid, req);
         let wb = new Excel.Workbook();
         wb.creator = 'Pharmasoft';
@@ -282,10 +282,11 @@ module.exports = function (app) {
         rs.recordset.forEach(item => {
           ws.addRow(item);
         });
-        const filename = `${rsId.recordset[0][0]}.${req.body.format}`;
+		  const filename = `${rsId.recordset[0].id}.${req.body.format}`;
+		  console.log(rsId.recordset);
         await wb[key].writeFile(path.join(__dirname + "/..", "reports", filename));
       } catch (e) {
-
+		  console.log(e);
       }
     }
 		res.json(messageManager.buildSuccess());
