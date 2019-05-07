@@ -128,7 +128,7 @@ module.exports = function (app) {
 					{ id: 5, name: 'ИНН Аптеки', key: 'Ph_INN' },
 					{ id: 6, name: 'Дата', type: 'date', key: 'dat' },
 					{ id: 7, name: 'Код SCU', key: 'G_ID' },
-					{ id: 8, name: 'Наименование', key: 'G_name' },
+					{ id: 8, name: 'Наименование', key: 'G_Name' },
 					{ id: 9, name: 'ШК', key: 'Barcode' },
 					{ id: 10, name: 'Количество', type: 'number', key: 'Qty' },
 					{ id: 11, name: 'Цена', type: 'number', key: 'Price' },
@@ -158,7 +158,7 @@ module.exports = function (app) {
 				]
 			},
 			{
-				id: 2,
+				id: 3,
 				name: 'Приходы',
 				description: 'Поиск по Приходам',
 				fields: [
