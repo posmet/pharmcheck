@@ -40,6 +40,20 @@ import { AutoSizer } from "react-virtualized";
 import { Menu, Item, contextMenu } from 'react-contexify';
 import classNames from 'classnames';
 
+import Chart, {
+  AdaptiveLayout,
+  CommonSeriesSettings,
+  Size,
+  Tooltip,
+} from 'devextreme-react/chart';
+import PivotGridDataSource from 'devextreme/ui/pivot_grid/data_source';
+import PivotGrid, {
+  FieldChooser,
+  FieldPanel,
+  HeaderFilter
+} from 'devextreme-react/pivot-grid';
+import CustomStore from "devextreme/data/custom_store";
+
 const summaryKey = 'frontSummary';
 const rowsTitleKey = 'frontRowsTitle';
 const separator = '#_#';
@@ -279,7 +293,114 @@ const getSum = (array, key) => {
   }, 0);
 };
 
-export class ExtendedTable extends React.PureComponent {
+export class ExtendedTable extends React.Component {
+  constructor(props) {
+    super();
+    this.setRefChart = this.setRef.bind(this, '_chart');
+    this.setRefPivot = this.setRef.bind(this, '_pivot');
+    let fields = [];
+    if (props.extended && props.extended.fields) {
+      fields = props.extended.fields;
+    } else {
+      props.columns.forEach(v => {
+        const title = v.title;
+        fields.push({name: title, caption: title, dataField: v.key, displayFolder: title, allowSorting: true, isMeasure: false});
+        fields.push({name: `${title} (сум)`, caption: `${title} (сум)`, dataField: v.key, displayFolder: title, summaryType: 'sum', allowFiltering: true, allowSorting: true, isMeasure: true});
+        fields.push({name: `${title} (кол-во)`, caption: `${title} (кол-во)`, dataField: v.key, displayFolder: title, summaryType: 'count', allowFiltering: true, allowSorting: true, isMeasure: true});
+        fields.push({name: `${title} (ср)`, caption: `${title} (ср)`, dataField: v.key, displayFolder: title, summaryType: 'avg', allowFiltering: true, allowSorting: true, isMeasure: true});
+        fields.push({name: `${title} (мин)`, caption: `${title} (мин)`, dataField: v.key, displayFolder: title, summaryType: 'min', allowFiltering: true, allowSorting: true, isMeasure: true});
+        fields.push({name: `${title} (макс)`, caption: `${title} (макс)`, dataField: v.key, displayFolder: title, summaryType: 'max', allowFiltering: true, allowSorting: true, isMeasure: true});
+      });
+      // fields = props.columns.map(v => ({caption: v.title, dataField: v.key}));
+    }
+    this.state = {
+      dataSource: new PivotGridDataSource({
+        fields,
+        onChanged: () => {
+          if (this._pivot) {
+            this.props.extended.fields = this._pivot.getDataSource().fields();
+          }
+        },
+        store: new CustomStore({
+          key: "id",
+          load: (loadOptions) => {
+            return new Promise((resolve) => {
+              return resolve(this.props.rows || []);
+            })
+          }
+        })
+      })
+    };
+  }
+  componentDidMount() {
+    this._pivot.bindChart(this._chart, {
+      dataFieldsDisplayMode: 'splitPanes',
+      alternateDataFields: false
+    });
+  }
+  componentWillReceiveProps(props) {
+    this.state.dataSource && this.state.dataSource.reload();
+    this._pivot.getDataSource().fields(this.props.extended.fields);
+  }
+  setRef = (key, el) => {
+    if (el && el.instance) {
+      this[key] = el.instance;
+    }
+  };
+  render() {
+    return (
+      <React.Fragment>
+        <Chart
+          ref={this.setRefChart}>
+          <Size height={200} />
+          {/*<Tooltip enabled={true} />*/}
+          <CommonSeriesSettings type={'bar'} />
+          <AdaptiveLayout width={450} />
+        </Chart>
+
+        <PivotGrid
+          dataSource={this.state.dataSource}
+          allowSortingBySummary={false}
+          allowFiltering={true}
+          showBorders={true}
+          showColumnTotals={true}
+          showColumnGrandTotals={true}
+          showRowTotals={false}
+          showRowGrandTotals={false}
+          texts={{
+            noData: "",
+            showFieldChooser: "Показать настройки таблицы",
+            grandTotal: 'Итого'
+          }}
+          ref={this.setRefPivot}
+        >
+          <FieldChooser
+            enabled={true}
+            height={500}
+            title="Настройки таблицы"
+            texts={{
+              allFields: 'Все поля',
+              columnFields: 'Колонки',
+              dataFields: 'Значения',
+              rowFields: 'Строки',
+              filterFields: 'Фильтр'
+            }}
+          />
+          <HeaderFilter
+            texts={{
+              cancel: 'Отмена',
+              ok: 'Применить',
+              emptyValue: 'Пусто'
+            }}
+          />
+          {/*<FieldPanel visible={true} />*/}
+        </PivotGrid>
+      </React.Fragment>
+    )
+  }
+}
+
+export class ExtendedTable1 extends React.PureComponent {
 
   state = {
     expandedRowIds: [],
