@@ -372,9 +372,11 @@ export class FilterItem extends Component {
           <div className="condition__name">{title}</div>
           <div className="condition__select">
             <Select
+              className="react-select"
               placeholder="Условие"
               isSearchable={false}
               menuPosition="fixed"
+              classNamePrefix="react-select"
               menuShouldBlockScroll
               value={condition}
               onChange={this.handleConditionChange}

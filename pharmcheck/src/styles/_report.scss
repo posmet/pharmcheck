@@ -19,6 +19,11 @@
 }
 
 .report-droppable-container {
+  .react-select {
+    .react-select__control + div {
+      z-index: 501 !important;
+    }
+  }
   &-wrapper {
     display: flex;
     flex: 1;
