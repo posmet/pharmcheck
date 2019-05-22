@@ -124,7 +124,7 @@ module.exports = function (app) {
 					{ id: 1, name: 'Сеть', key: 'Group_Name' },
 					{ id: 2, name: 'Аптека', key: 'Ph_Name' },
 					{ id: 3, name: 'Адрес', key: 'Ph_Addr' },
-					{ id: 4, name: 'ФИАС', key: 'Ph_FIAS' },
+					{ id: 4, name: 'ФИАС', key: 'FIAS' },
 					{ id: 5, name: 'ИНН Аптеки', key: 'Ph_INN' },
 					{ id: 6, name: 'Дата', type: 'date', key: 'dat' },
 					{ id: 7, name: 'Код SCU', key: 'G_ID' },
