@@ -17,6 +17,7 @@ import uuid from 'uuid/v4';
     changeExtended: stores.ReportStore.changeExtended,
   };
 })
+@observer
 class TabContent extends Component {
   onTableChange = (v) => {
     this.props.changeColumns(v);
@@ -53,7 +54,7 @@ class Report extends Component {
 
   state = {
     showFilter: false,
-    tableView: 'extended',
+    tableView: 'default',
     settingsModal: false,
     requestModal: false,
     saveModal: false

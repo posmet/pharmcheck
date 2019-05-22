@@ -191,6 +191,35 @@ const valuesMap = {
   }
 };
 
+const ConditionCell = (props) => {
+  const style = {};
+  if (props.column && props.column.conditions && props.column.conditions.length) {
+    props.column.conditions.forEach(v => {
+      if (typeof props.row[v.field] !== 'undefined') {
+        switch (v.condition) {
+          case 'lt':
+            if (props.value < props.row[v.field]) {
+              style.color = v.color;
+            }
+            break;
+          case 'gt':
+            if (props.value > props.row[v.field]) {
+              style.color = v.color;
+            }
+            break;
+        }
+      }
+    });
+  }
+  return (
+    <Table.Cell {...props}>
+      <span style={style}>
+        {props.value}
+      </span>
+    </Table.Cell>
+  );
+};
+
 class ExtendedDroppableColumn extends React.PureComponent {
   map = {
     fields: {
@@ -985,6 +1014,7 @@ export class DefaultTable extends React.PureComponent {
                   <VirtualTable
                     height="auto"
                     tableComponent={TableComponent}
+                    cellComponent={ConditionCell}
                     messages={tableMessages}
                   />
                   <TableGroupRow/>
