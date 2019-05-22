@@ -8,6 +8,44 @@ import { Filter } from "@components/report/Filter";
 import { DefaultTable, ExtendedTable } from "@components/report/Tables";
 import uuid from 'uuid/v4';
 
+@inject(stores => {
+  return {
+    selected: stores.ReportStore.selected,
+    saved: stores.ReportStore.saved,
+    data: stores.ReportStore.data,
+    changeColumns: stores.ReportStore.changeColumns,
+    changeExtended: stores.ReportStore.changeExtended,
+  };
+})
+class TabContent extends Component {
+  onTableChange = (v) => {
+    this.props.changeColumns(v);
+  };
+
+  onExtendedTableChange = (extended, columns) => {
+    this.props.changeExtended(extended, columns);
+  };
+  render() {
+    if (!this.props.selected.fields.length) {
+      return null;
+    }
+    return this.props.tableView === 'default' ? (
+      <DefaultTable
+        rows={this.props.data}
+        columns={this.props.saved.fields}
+        onChange={this.onTableChange}
+      />
+    ) : (
+      <ExtendedTable
+        rows={this.props.data}
+        columns={this.props.selected.fields}
+        extended={this.props.saved.extended}
+        onChange={this.onExtendedTableChange}
+      />
+    )
+  }
+}
+
 
 @inject('AppStore', 'ReportStore', 'RoutingStore')
 @observer
@@ -15,7 +53,7 @@ class Report extends Component {
 
   state = {
     showFilter: false,
-    tableView: 'default',
+    tableView: 'extended',
     settingsModal: false,
     requestModal: false,
     saveModal: false
@@ -89,6 +127,26 @@ class Report extends Component {
     this.setState({[key]: value});
   };
 
+  get tabContent() {
+    if (!this.props.ReportStore.selected.fields.length) {
+      return null;
+    }
+    return this.state.tableView === 'default' ? (
+      <DefaultTable
+        rows={this.props.ReportStore.data}
+        columns={this.props.ReportStore.saved.fields}
+        onChange={this.onTableChange}
+      />
+    ) : (
+      <ExtendedTable
+        rows={this.props.ReportStore.data}
+        columns={this.props.ReportStore.selected.fields}
+        extended={this.props.ReportStore.saved.extended}
+        onChange={this.onExtendedTableChange}
+      />
+    )
+  }
+
   render() {
     const { props, state, toggleModal, onSubmitSettings, onSubmitRequest, onSubmitReport, onRefresh } = this;
     const { ReportStore } = props;
@@ -118,20 +176,8 @@ class Report extends Component {
               </ButtonToolbar>
             </div>
             <div className="report-data__body">
-              {state.tableView === 'default' ? (
-                <DefaultTable
-                  rows={data}
-                  columns={saved.fields}
-                  onChange={this.onTableChange}
-                />
-              ) : (
-                <ExtendedTable
-                  rows={data}
-                  columns={saved.fields}
-                  extended={saved.extended}
-                  onChange={this.onExtendedTableChange}
-                />
-              )}
+              {/*{ this.tabContent }*/}
+              <TabContent tableView={this.state.tableView} />
               <Tabs
                 activeKey={state.tableView}
                 onSelect={this.onSelectView}
