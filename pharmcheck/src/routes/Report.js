@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import {Card, Collapse, Button, ButtonToolbar, Tabs, Tab} from 'react-bootstrap';
+import {Card, Collapse, Button as BButton, ButtonToolbar, Tabs, Tab} from 'react-bootstrap';
 import { observer, inject } from 'mobx-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { SettingsModal, RequestModal, SaveModal } from "@components/report/Modals";
 import { Filter } from "@components/report/Filter";
 import { DefaultTable, ExtendedTable } from "@components/report/Tables";
+import Button from '@material-ui/core/Button';
 import uuid from 'uuid/v4';
 
 @inject(stores => {
@@ -26,16 +27,36 @@ class TabContent extends Component {
   onExtendedTableChange = (extended, columns) => {
     this.props.changeExtended(extended, columns);
   };
+  getButton = (props) => {
+    const attrs = {
+      key: props.caption
+    };
+    if (props.href) {
+      attrs.href = props.href;
+    }
+    switch (props.caption) {
+      case 'Править':
+        attrs.color = "primary";
+        break;
+      case 'Удалить':
+        attrs.color = "secondary";
+        break;
+    }
+    return <Button {...attrs} >{props.caption}</Button>;
+  };
   render() {
     if (!this.props.selected.fields.length) {
       return null;
     }
     return this.props.tableView === 'default' ? (
-      <DefaultTable
-        rows={this.props.data}
-        columns={this.props.saved.fields}
-        onChange={this.onTableChange}
-      />
+      <React.Fragment>
+        {this.props.selected.actions && this.props.selected.actions.length ? this.props.selected.actions.map(v => this.getButton(v)) : null}
+        <DefaultTable
+          rows={this.props.data}
+          columns={this.props.saved.fields}
+          onChange={this.onTableChange}
+        />
+      </React.Fragment>
     ) : (
       <ExtendedTable
         rows={this.props.data}
@@ -158,9 +179,9 @@ class Report extends Component {
       <Card>
         <Card.Header>{selected.description}</Card.Header>
         <Card.Body>
-          <Button variant="link" onClick={() => this.setState({showFilter: !showFilter})}>
+          <BButton variant="link" onClick={() => this.setState({showFilter: !showFilter})}>
             <FontAwesomeIcon icon={faAngleRight} /> Фильтр
-          </Button>
+          </BButton>
           <Collapse in={showFilter}>
             <div>
               <Filter from={selected.fields} to={saved.filter} onChange={this.onFilterChange} />
@@ -170,9 +191,9 @@ class Report extends Component {
             <div className="report-data__header">
               <div className="report-data__header--info">Найдено {data.length} позиций, поиск занял {dataRequestTime || 0} сек.</div>
               <ButtonToolbar className="report-data__header--buttons">
-                <Button variant="outline-success" onClick={onRefresh}>Обновить</Button>
-                <Button variant="outline-success" onClick={toggleModal.bind(this, 'requestModal', true)}>Сохранить</Button>
-                <Button variant="outline-success" onClick={toggleModal.bind(this, 'saveModal', true)}>Создать отчет</Button>
+                <Button variant="outlined" color="primary" onClick={onRefresh}>Обновить</Button>
+                <Button variant="outlined" color="primary" onClick={toggleModal.bind(this, 'requestModal', true)}>Сохранить</Button>
+                <Button variant="outlined" color="primary" onClick={toggleModal.bind(this, 'saveModal', true)}>Создать отчет</Button>
                 {/*<Button variant="outline-success" onClick={toggleModal.bind(this, 'settingsModal', true)}>Настройки таблицы</Button>*/}
               </ButtonToolbar>
             </div>
