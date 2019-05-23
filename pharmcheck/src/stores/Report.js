@@ -157,10 +157,12 @@ class ReportStore extends AbstractStore {
       body.extended.columns = body.extended.columns || [];
       body.extended.values = body.extended.values || [];
       body.extended.actions = body.extended.actions || [];
+      // body.fields = this.selected.fields;
       this.saved = body;
     } catch(e) {
       errorHandler.call(this, {showToast: true}, e);
       if (!e.abort) {
+        this.changeColumns(this.selected.fields);
         throw e;
       }
     }

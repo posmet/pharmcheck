@@ -45,7 +45,7 @@ class TabContent extends Component {
     return <Button {...attrs} >{props.caption}</Button>;
   };
   render() {
-    if (!this.props.selected.fields.length) {
+    if (!this.props.saved.fields.length) {
       return null;
     }
     return this.props.tableView === 'default' ? (
@@ -90,6 +90,7 @@ class Report extends Component {
     const {ReportStore, RoutingStore, match} = this.props;
     if (!ReportStore.selected) {
       RoutingStore.push('/');
+      return false;
     }
     const { savedId } = match.params;
     if (savedId) {

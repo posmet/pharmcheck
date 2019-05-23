@@ -340,7 +340,6 @@ export class ExtendedTable extends React.Component {
         fields.push({name: `${title} (мин)`, caption: `${title} (мин)`, dataField: v.key, displayFolder: title, summaryType: 'min', allowFiltering: true, allowSorting: true, isMeasure: true});
         fields.push({name: `${title} (макс)`, caption: `${title} (макс)`, dataField: v.key, displayFolder: title, summaryType: 'max', allowFiltering: true, allowSorting: true, isMeasure: true});
       });
-      // fields = props.columns.map(v => ({caption: v.title, dataField: v.key}));
     }
     this.state = {
       dataSource: new PivotGridDataSource({
@@ -351,7 +350,7 @@ export class ExtendedTable extends React.Component {
           }
         },
         store: new CustomStore({
-          key: "id",
+          key: "customStore",
           load: (loadOptions) => {
             return new Promise((resolve) => {
               return resolve(this.props.rows || []);
@@ -369,7 +368,7 @@ export class ExtendedTable extends React.Component {
   }
   componentWillReceiveProps(props) {
     this.state.dataSource && this.state.dataSource.reload();
-    this._pivot.getDataSource().fields(this.props.extended.fields);
+    // this._pivot.getDataSource().fields(this.props.extended.fields);
   }
   setRef = (key, el) => {
     if (el && el.instance) {
@@ -382,7 +381,7 @@ export class ExtendedTable extends React.Component {
         <Chart
           ref={this.setRefChart}>
           <Size height={200} />
-          {/*<Tooltip enabled={true} />*/}
+          <Tooltip enabled={true} />
           <CommonSeriesSettings type={'bar'} />
           <AdaptiveLayout width={450} />
         </Chart>
